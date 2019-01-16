@@ -1,0 +1,30 @@
+syntax = "proto3";
+package anchor;
+
+enum IslandType {
+  btc = 0;
+  eth = 1;
+  nem = 2;
+}
+
+message Anchor {
+  string description = 1;
+  string version = 2;
+  IslandType target = 3;
+  repeated Lock locks = 4;
+}
+
+message Lock {
+  IslandType type = 1;
+  string version = 2;
+  string name = 3;
+  Block block = 4;
+  string lastKnownPosition = 5;
+}
+
+message Block {
+  string height = 1;
+  string hash = 2;
+  string timestamp = 3;
+  repeated string uri = 4;
+}
