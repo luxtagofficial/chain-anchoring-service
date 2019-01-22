@@ -28,3 +28,11 @@ message Block {
   string timestamp = 3;
   repeated string uri = 4;
 }
+
+message CallSign {
+  string id = 1;
+}
+
+service Announce {
+  rpc Location (Lock) returns (CallSign) {}
+}

@@ -1,27 +1,16 @@
 # VARIABLES
 PACKAGE="github.com/luxtagofficial/chain-anchoring-service"
-BINARY_NAME="chain-anchoring-service"
 
 default: usage
 
-clean: ## Trash binary files
-	@echo "--> cleaning..."
-	@go clean || (echo "Unable to clean project" && exit 1)
-	@rm -rf $(GOPATH)/bin/$(BINARY_NAME) 2> /dev/null
-	@echo "Clean OK"
+island: ## Run server
+	@go run src/island/island.go
 
-test: ## Run all tests
-	@echo "--> testing..."
-	@go test -v $(PACKAGE)/...
+ship: ## Run client
+	@go run src/ship/ship.go
 
-install: clean ## Compile sources and build binary
-	@echo "--> installing..."
-	@go install $(PACKAGE) || (echo "Compilation error" && exit 1)
-	@echo "Install OK"
-
-run: install ## Run your application
-	@echo "--> running application..."
-	@$(GOPATH)/bin/$(BINARY_NAME)
+proto: ## Compile .proto files
+	protoc -I anchor --go_out=plugins=grpc:anchor anchor/anchor.proto
 
 usage: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
