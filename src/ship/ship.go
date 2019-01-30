@@ -2,22 +2,57 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"math/big"
+	"os"
 	"time"
 
 	pb "github.com/luxtagofficial/chain-anchoring-service/anchor"
 	"github.com/proximax-storage/nem2-sdk-go/sdk"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 )
 
-const (
-	wsURL       = "wss://api.iium.luxtag.io/ws"
-	networkType = sdk.MijinTest
-	address     = "localhost:50051"
+var (
+	ws          *sdk.ClientWebsocket
+	wsURL       string
+	networkType sdk.NetworkType
+	checkpoint  = big.NewInt(0)
+	targetBlock = big.NewInt(0)
 )
 
 func main() {
+	// Fetch variables
+	viper.SetEnvPrefix("ship")
+	viper.AutomaticEnv()
+	pflag.String("dock", "", "Private key of account to send the transaction from")
+	pflag.String("type", "", "Ship Blockchain type")
+	pflag.String("wsendpoint", "", "Endpoint url")
+	pflag.String("networktype", "", "Endpoint network type")
+	pflag.Int("checkpoint", 1, "Checkpoint every X blocks")
+	pflag.Parse()
+	viper.BindPFlags(pflag.CommandLine)
+
+	viper.SetDefault("dock", "localhost:50051")
+	viper.SetDefault("type", "")
+	viper.SetDefault("wsendpoint", "ws://localhost:3000/ws")
+	viper.SetDefault("networktype", "MIJIN_TEST")
+	viper.SetDefault("checkpoint", 1)
+
+	t := viper.GetString("type")
+
+	address := viper.GetString("dock")
+	wsURL = viper.GetString("wsendpoint")
+	networkType = sdk.NetworkTypeFromString(viper.GetString("networktype"))
+	checkpoint = big.NewInt(viper.GetInt64("checkpoint"))
+
+	// log.Println(t)
+	// log.Println(address)
+	// log.Println(wsURL)
+	// log.Println(networkType)
+	// log.Println(checkpoint)
+
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
@@ -29,45 +64,52 @@ func main() {
 	// Timing
 	start := time.Now()
 
-	// Websocket
-	ws, err := sdk.NewConnectWs(wsURL, 0)
-	if err != nil {
-		panic(err)
+	switch t {
+	case "nem":
+		ws, err = sdk.NewConnectWs(wsURL, 0)
+		if err != nil {
+			panic(err)
+		}
+	default:
+		log.Println("Invalid blockchain type.\n\nTry running `ship --type nem`")
+		os.Exit(1)
 	}
 
-	fmt.Println("websocket negotiated uid:", ws.Uid)
+	// Websocket
+
+	log.Println("websocket negotiated uid:", ws.Uid)
 	// The block channel notifies for every new block.
 	// The message contains the block information.
 	chBlock, err := ws.Subscribe.Block()
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println("Height\tTxs\tSigner\tBlock Hash\tPrevious Hash\tTime Elapsed")
 	for {
 		data := <-chBlock.Ch
 		elapsed := time.Since(start)
-		fmt.Printf(
-			"%v\t%v\t%v\t%v\t%v\t%s\n",
-			data.Height,
-			data.NumTransactions,
-			data.Signer.PublicKey[0:5],
-			data.Hash[0:8],
-			data.PreviousBlockHash[0:8],
-			elapsed)
-		lock := &pb.Lock{
-			Type:    pb.IslandType_nem,
-			Version: "0.2.0.2",
-			Name:    "LuxTag X Chain",
-			Block: &pb.Block{
-				Height:    data.Height.String(),
-				Hash:      data.Hash,
-				Timestamp: data.Timestamp.String(),
-			},
-		}
-		_, err := c.Location(context.Background(), lock)
-		if err != nil {
-			log.Fatalf("could not greet: %v", err)
+
+		log.Printf("New block height %v\n", data.Height)
+		log.Printf("Time since last block %v\n", elapsed)
+		if targetBlock.Cmp(data.Height) > 0 {
+			log.Printf("Skip sending block %v, next target block is %v\n", data.Height, targetBlock)
+		} else {
+			lock := &pb.Lock{
+				Type:    pb.IslandType_nem,
+				Version: "0.2.0.2",
+				Name:    "LuxTag X Chain",
+				Block: &pb.Block{
+					Height:    data.Height.String(),
+					Hash:      data.Hash,
+					Timestamp: data.Timestamp.String(),
+				},
+			}
+			txHash, err := c.Location(context.Background(), lock)
+			if err != nil {
+				log.Fatalf("could not greet: %v", err)
+			}
+			targetBlock = data.Height.Add(data.Height, checkpoint)
+			log.Printf("Received hash: %v\n", txHash.Id)
+			log.Printf("Next target block is %v\n", targetBlock)
 		}
 		start = time.Now()
 	}

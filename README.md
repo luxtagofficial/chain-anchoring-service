@@ -13,7 +13,7 @@ Placing all transactions on a public blockchain will guarantee that every single
 
 We will designate the public blockchain as islands and the private blockchain as ships.
 
-## Start
+## Quick Start
 
 Make sure you have go installed (https://golang.org/doc/install)
 
@@ -22,7 +22,12 @@ Download the repository
 go get -u github.com/luxtagofficial/chain-anchoring-service
 ```
 
-To start the server
+To use the default settings, rename `.env.example` to `.env`, then
+```
+export $(grep -v '^#' .env | xargs -d '\n')
+```
+
+Start the server
 ```
 make island
 ```
