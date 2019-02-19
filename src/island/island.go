@@ -61,8 +61,8 @@ func (s *server) announceAnchor(anchor *pb.Anchor) *sdk.SignedTransaction {
 	if err != nil {
 		log.Fatalf("Sign throw: %v", err)
 	}
-	client.Transaction.Announce(context.Background(), signedTx)
-
+	resp, _ := client.Transaction.Announce(context.Background(), signedTx)
+	log.Println(resp)
 	return signedTx
 }
 
@@ -99,11 +99,6 @@ func main() {
 	endpoint = viper.GetString("endpoint")
 	networkType = sdk.NetworkTypeFromString(viper.GetString("networktype"))
 	signer, _ = sdk.NewAccountFromPrivateKey(privateKey, networkType)
-
-	// log.Println(t)
-	// log.Println(endpoint)
-	// log.Println(privateKey)
-	// log.Println(networkType)
 
 	switch t {
 	case "nem":

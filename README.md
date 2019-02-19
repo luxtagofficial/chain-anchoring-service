@@ -13,7 +13,13 @@ Placing all transactions on a public blockchain will guarantee that every single
 
 We will designate the public blockchain as islands and the private blockchain as ships.
 
-## Quick Start
+## Quick start
+
+Copy `.env.example` to `.env`
+
+Run `docker-compose up`
+
+## How to build
 
 Make sure you have go installed (https://golang.org/doc/install)
 

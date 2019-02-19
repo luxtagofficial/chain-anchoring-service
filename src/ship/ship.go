@@ -17,7 +17,9 @@ import (
 var (
 	ws          *sdk.ClientWebsocket
 	wsURL       string
+	name        string
 	networkType sdk.NetworkType
+	version     string
 	checkpoint  = big.NewInt(0)
 	targetBlock = big.NewInt(0)
 )
@@ -27,7 +29,9 @@ func main() {
 	viper.SetEnvPrefix("ship")
 	viper.AutomaticEnv()
 	pflag.String("dock", "", "Private key of account to send the transaction from")
+	pflag.String("name", "", "Ship Blockchain name")
 	pflag.String("type", "", "Ship Blockchain type")
+	pflag.String("version", "", "Ship Blockchain version")
 	pflag.String("wsendpoint", "", "Endpoint url")
 	pflag.String("networktype", "", "Endpoint network type")
 	pflag.Int("checkpoint", 1, "Checkpoint every X blocks")
@@ -35,7 +39,9 @@ func main() {
 	viper.BindPFlags(pflag.CommandLine)
 
 	viper.SetDefault("dock", "localhost:50051")
+	viper.SetDefault("name", "")
 	viper.SetDefault("type", "")
+	viper.SetDefault("version", "")
 	viper.SetDefault("wsendpoint", "ws://localhost:3000/ws")
 	viper.SetDefault("networktype", "MIJIN_TEST")
 	viper.SetDefault("checkpoint", 1)
@@ -44,14 +50,10 @@ func main() {
 
 	address := viper.GetString("dock")
 	wsURL = viper.GetString("wsendpoint")
+	name = viper.GetString("name")
 	networkType = sdk.NetworkTypeFromString(viper.GetString("networktype"))
+	version = viper.GetString("version")
 	checkpoint = big.NewInt(viper.GetInt64("checkpoint"))
-
-	// log.Println(t)
-	// log.Println(address)
-	// log.Println(wsURL)
-	// log.Println(networkType)
-	// log.Println(checkpoint)
 
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
@@ -95,8 +97,8 @@ func main() {
 		} else {
 			lock := &pb.Lock{
 				Type:    pb.IslandType_nem,
-				Version: "0.2.0.2",
-				Name:    "LuxTag X Chain",
+				Version: version,
+				Name:    name,
 				Block: &pb.Block{
 					Height:    data.Height.String(),
 					Hash:      data.Hash,

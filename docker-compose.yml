@@ -1,0 +1,12 @@
+---
+version: "2"
+
+services:
+  island:
+    build: src/island
+    env_file: .env
+  ship:
+    build: src/ship
+    env_file: .env
+    depends_on:
+      - island
