@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang/protobuf/jsonpb"
 	pb "github.com/luxtagofficial/chain-anchoring-service/anchor"
-	"github.com/proximax-storage/nem2-sdk-go/sdk"
+	"github.com/luxtagofficial/nem2-sdk-go/sdk"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
