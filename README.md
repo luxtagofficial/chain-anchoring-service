@@ -19,20 +19,37 @@ Requires a minimum version of `go@1.11`
 
 ## Quick start
 
-Copy `.env.example` to `.env`
+```sh
+# Copy `.env.example` to `.env`
+cp .env.example .env
 
-Run `make install` followed by `docker-compose up`
+# Install go dependencies
+make install
+
+# Start docker compose
+docker-compose up
+```
 
 ## How to build
 
 Make sure you have go installed (https://golang.org/doc/install)
 
-Download the repository
+Install dependencies (Ubuntu)
 ```
-go get -u github.com/luxtagofficial/chain-anchoring-service
+sudo apt install make gcc
 ```
 
-To use the default settings, rename `.env.example` to `.env`, then
+Clone the repository
+```
+git clone https://github.com/luxtagofficial/chain-anchoring-service.git
+```
+
+To use the default settings, rename `.env.example` to `.env`
+```
+cp .env.example .env
+```
+
+Then export the variables to shell
 ```
 export $(grep -v '^#' .env | xargs -d '\n')
 ```
