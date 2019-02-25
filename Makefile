@@ -1,16 +1,28 @@
+.PHONY: install island ship
+
+include .env
+
 # VARIABLES
 PACKAGE="github.com/luxtagofficial/chain-anchoring-service"
 
-default: usage
-
-island: ## Run server
-	@go run src/island/island.go
-
-ship: ## Run client
-	@go run src/ship/ship.go
-
-proto: ## Compile .proto files
+# Compile .proto files
+# usage: make proto
+proto:
 	protoc -I anchor --go_out=plugins=grpc:anchor anchor/anchor.proto
 
-usage: ## List available targets
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+# Install go modules
+# usage: make install
+install:
+	@go mod vendor
+
+# Run island service
+# usage: make run island type=<island endpoint type>
+# example: make run island type=nem2
+island:
+	@go run island/${type}/island.go
+
+# Run ship service
+# usage: make run ship type=<island endpoint type>
+# example: make run ship type=nem2
+ship:
+	@go run ship/${type}/ship.go

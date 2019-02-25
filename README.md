@@ -13,11 +13,15 @@ Placing all transactions on a public blockchain will guarantee that every single
 
 We will designate the public blockchain as islands and the private blockchain as ships.
 
+## Prerequisites
+
+Requires a minimum version of `go@1.11`
+
 ## Quick start
 
 Copy `.env.example` to `.env`
 
-Run `docker-compose up`
+Run `make install` followed by `docker-compose up`
 
 ## How to build
 
@@ -35,10 +39,10 @@ export $(grep -v '^#' .env | xargs -d '\n')
 
 Start the server
 ```
-make island
+make island type=nem2
 ```
 
 Start the client
 ```
-make ship
+make ship type=nem2
 ```

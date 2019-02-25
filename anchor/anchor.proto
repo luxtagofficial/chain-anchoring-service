@@ -5,6 +5,7 @@ enum IslandType {
   btc = 0;
   eth = 1;
   nem = 2;
+  nem2 = 3;
 }
 
 message Anchor {

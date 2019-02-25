@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net"
-	"os"
 	"time"
 
 	"github.com/golang/protobuf/jsonpb"
@@ -16,10 +15,6 @@ import (
 	"google.golang.org/grpc/peer"
 )
 
-const (
-	port = ":50051"
-)
-
 type server struct{}
 
 var config *sdk.Config
@@ -28,12 +23,13 @@ var privateKey string
 var endpoint string
 var networkType sdk.NetworkType
 var signer *sdk.Account
+var port string
 
 func (s *server) generateAnchor(lock *pb.Lock) (anchor *pb.Anchor) {
 	anchor = &pb.Anchor{
 		Description: "LuxTag Chain Anchoring Service",
-		Version:     "1.0.0",
-		Target:      pb.IslandType_nem,
+		Version:     "1.0.1",
+		Target:      pb.IslandType_nem2,
 		Locks: []*pb.Lock{
 			lock,
 		},
@@ -79,37 +75,29 @@ func (s *server) Location(ctx context.Context, lock *pb.Lock) (*pb.CallSign, err
 
 func main() {
 	// Fetch variables
-	viper.SetEnvPrefix("island")
+	viper.SetEnvPrefix("island_nem2")
 	viper.AutomaticEnv()
-	pflag.String("type", "", "Island Blockchain type")
 	pflag.String("endpoint", "", "Endpoint url")
 	pflag.String("privatekey", "", "Private key of account to send the transaction from")
 	pflag.String("networktype", "", "Endpoint network type")
+	pflag.String("port", ":50051", "Endpoint network type")
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 
 	viper.SetDefault("endpoint", "http://localhost:3000/")
 	viper.SetDefault("privatekey", "")
-	viper.SetDefault("type", "")
 	viper.SetDefault("networktype", "MIJIN_TEST")
-
-	t := viper.GetString("type")
+	viper.SetDefault("port", ":50051")
 
 	privateKey = viper.GetString("privatekey")
 	endpoint = viper.GetString("endpoint")
 	networkType = sdk.NetworkTypeFromString(viper.GetString("networktype"))
 	signer, _ = sdk.NewAccountFromPrivateKey(privateKey, networkType)
-
-	switch t {
-	case "nem":
-		config, _ = sdk.NewConfig(endpoint, networkType)
-		client = sdk.NewClient(nil, config)
-	default:
-		log.Println("Invalid blockchain type.\n\nTry running `island --type nem`")
-		os.Exit(1)
-	}
+	port := viper.GetString("port")
 
 	// Start grpc server
+	config, _ = sdk.NewConfig(endpoint, networkType)
+	client = sdk.NewClient(nil, config)
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

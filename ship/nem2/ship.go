@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"math/big"
-	"os"
 	"time"
 
 	pb "github.com/luxtagofficial/chain-anchoring-service/anchor"
@@ -26,11 +25,10 @@ var (
 
 func main() {
 	// Fetch variables
-	viper.SetEnvPrefix("ship")
+	viper.SetEnvPrefix("ship_nem2")
 	viper.AutomaticEnv()
 	pflag.String("dock", "", "Private key of account to send the transaction from")
 	pflag.String("name", "", "Ship Blockchain name")
-	pflag.String("type", "", "Ship Blockchain type")
 	pflag.String("version", "", "Ship Blockchain version")
 	pflag.String("wsendpoint", "", "Endpoint url")
 	pflag.String("networktype", "", "Endpoint network type")
@@ -40,13 +38,10 @@ func main() {
 
 	viper.SetDefault("dock", "localhost:50051")
 	viper.SetDefault("name", "")
-	viper.SetDefault("type", "")
 	viper.SetDefault("version", "")
 	viper.SetDefault("wsendpoint", "ws://localhost:3000/ws")
 	viper.SetDefault("networktype", "MIJIN_TEST")
 	viper.SetDefault("checkpoint", 1)
-
-	t := viper.GetString("type")
 
 	address := viper.GetString("dock")
 	wsURL = viper.GetString("wsendpoint")
@@ -66,19 +61,11 @@ func main() {
 	// Timing
 	start := time.Now()
 
-	switch t {
-	case "nem":
-		ws, err = sdk.NewConnectWs(wsURL, 0)
-		if err != nil {
-			panic(err)
-		}
-	default:
-		log.Println("Invalid blockchain type.\n\nTry running `ship --type nem`")
-		os.Exit(1)
-	}
-
 	// Websocket
-
+	ws, err = sdk.NewConnectWs(wsURL, 0)
+	if err != nil {
+		panic(err)
+	}
 	log.Println("websocket negotiated uid:", ws.Uid)
 	// The block channel notifies for every new block.
 	// The message contains the block information.
@@ -96,7 +83,7 @@ func main() {
 			log.Printf("Skip sending block %v, next target block is %v\n", data.Height, targetBlock)
 		} else {
 			lock := &pb.Lock{
-				Type:    pb.IslandType_nem,
+				Type:    pb.IslandType_nem2,
 				Version: version,
 				Name:    name,
 				Block: &pb.Block{
