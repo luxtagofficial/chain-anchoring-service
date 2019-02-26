@@ -1,6 +1,7 @@
 .PHONY: install island ship
 
 include .env
+export
 
 # VARIABLES
 PACKAGE="github.com/luxtagofficial/chain-anchoring-service"
@@ -19,10 +20,10 @@ install:
 # usage: make run island type=<island endpoint type>
 # example: make run island type=nem2
 island:
-	@go run island/${type}/island.go
+	@go run island/${type}/main.go
 
 # Run ship service
 # usage: make run ship type=<island endpoint type>
 # example: make run ship type=nem2
 ship:
-	@go run ship/${type}/ship.go
+	@go run ship/${type}/main.go
