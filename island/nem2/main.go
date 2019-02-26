@@ -91,10 +91,10 @@ func main() {
 	// Fetch variables
 	viper.SetEnvPrefix("island_nem2")
 	viper.AutomaticEnv()
-	pflag.String("endpoint", "", "Endpoint url")
+	pflag.String("endpoint", "", "Catapult endpoint url. Include port if necessary")
 	pflag.String("privatekey", "", "Private key of account to send the transaction from")
 	pflag.String("networktype", "", "Endpoint network type")
-	pflag.String("port", ":50051", "Endpoint network type")
+	pflag.String("port", ":50051", "Port to listen for incoming ships")
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 
