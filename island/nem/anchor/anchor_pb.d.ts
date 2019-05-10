@@ -136,6 +136,27 @@ export namespace CallSign {
     }
 }
 
+export class Header extends jspb.Message { 
+    getHeight(): number;
+    setHeight(value: number): void;
+
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Header.AsObject;
+    static toObject(includeInstance: boolean, msg: Header): Header.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: Header, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Header;
+    static deserializeBinaryFromReader(message: Header, reader: jspb.BinaryReader): Header;
+}
+
+export namespace Header {
+    export type AsObject = {
+        height: number,
+    }
+}
+
 export enum IslandType {
     BTC = 0,
     ETH = 1,

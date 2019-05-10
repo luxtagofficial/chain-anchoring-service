@@ -48,6 +48,15 @@ message CallSign {
   string id = 1;
 }
 
+message Header {
+  uint64 height = 1;
+  IslandType type = 2;
+}
+
 service Announce {
   rpc Location (Lock) returns (CallSign) {}
+}
+
+service Inspect {
+  rpc Block (Header) returns (Lock) {}
 }

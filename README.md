@@ -1,4 +1,6 @@
-# LuxTag Public Chain Anchoring Service
+# LuxTag Chain Anchoring Service
+
+## Anchoring
 
 The goal of chain anchoring is to secure the data integrity of a smaller private chain to a larger public chain for audibility without the high cost of transactions on a public chain.
 
@@ -11,55 +13,21 @@ The use of blockchain is mainly to show two things:
 
 Placing all transactions on a public blockchain will guarantee that every single transaction existed at a certain point of time and did not change after that time. However, in most cases it is sufficient to show prove that data up to a certain point of time (at the time of anchoring) is valid and did not change.
 
-We will designate the public blockchain as islands and the private blockchain as ships.
+We will designate the public blockchain as **islands** and the private blockchain as **ships**.
 
-## Prerequisites
+## Verifying
 
-Requires a minimum version of `go@1.11`
+Verification service will run in two parts, an **inspector** service that generates a list of block headers stored on the public blockchain, and a **skipper** that fetches block headers from the private blockchain for the inspector to verify.
 
-## Quick start
+### Generic overview of verifier functions
 
-```sh
-# Copy `.env.example` to `.env`
-cp .env.example .env
+1. Fetch transaction payload
+2. Parse payload to anchor format
+3. Show list of locks found
+4. Sort by height and chain
+5. For each anchor, ask ship for anchor at height
+6. Compare and display
 
-# Install go dependencies
-make install
+## How to run
 
-# Start docker compose
-docker-compose up
-```
-
-## How to build
-
-Make sure you have go installed (https://golang.org/doc/install)
-
-Install dependencies (Ubuntu)
-```
-sudo apt install make gcc
-```
-
-Clone the repository
-```
-git clone https://github.com/luxtagofficial/chain-anchoring-service.git
-```
-
-To use the default settings, rename `.env.example` to `.env`
-```
-cp .env.example .env
-```
-
-Then export the variables to shell
-```
-export $(grep -v '^#' .env | xargs -d '\n')
-```
-
-Start the server
-```
-make island type=nem2
-```
-
-Start the client
-```
-make ship type=nem2
-```
+For details on how to use this project see [HOW-TO-BUILD.md](./HOW-TO-BUILD.md)

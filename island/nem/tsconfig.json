@@ -28,8 +28,7 @@
     "baseUrl": "./",                    /* Base directory to resolve non-absolute module names. */
     "paths": {
       "*": [
-          "node_modules/*",
-          "src/types/*"
+        "node_modules/*"
       ]
     },
     "typeRoots": [
@@ -56,8 +55,5 @@
     "node_modules",
     "dist",
     "**/tests/*"
-  ],
-  "include": [
-    "src/**/*.ts",
   ]
 }

@@ -4,11 +4,15 @@ version: "2.1"
 services:
   island:
     build:
+      args:
+        SRC_DIR: island/${ISLAND_TYPE:-nem2}
       context: .
       dockerfile: island/${ISLAND_TYPE:-nem2}/Dockerfile
     env_file: .env
   ship:
     build:
+      args:
+        SRC_DIR: ship/${SHIP_TYPE:-nem2}
       context: .
       dockerfile: ship/${SHIP_TYPE:-nem2}/Dockerfile
     env_file: .env

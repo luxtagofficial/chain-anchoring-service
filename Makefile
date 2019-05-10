@@ -1,4 +1,4 @@
-.PHONY: install island ship
+.PHONY: install island ship export
 
 include .env
 export
@@ -10,6 +10,9 @@ PACKAGE="github.com/luxtagofficial/chain-anchoring-service"
 # usage: make proto
 proto:
 	protoc -I anchor --go_out=plugins=grpc:anchor anchor/anchor.proto
+
+export:
+	export $(cat .env | sed -e /^$/d -e /^#/d | xargs)
 
 # Install go modules
 # usage: make install

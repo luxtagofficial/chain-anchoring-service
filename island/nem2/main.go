@@ -20,7 +20,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/golang/protobuf/jsonpb"
+	"github.com/golang/protobuf/proto"
 	pb "github.com/luxtagofficial/chain-anchoring-service/anchor"
 	"github.com/luxtagofficial/nem2-sdk-go/sdk"
 	"github.com/spf13/pflag"
@@ -52,16 +52,13 @@ func (s *server) generateAnchor(lock *pb.Lock) (anchor *pb.Anchor) {
 }
 
 func (s *server) announceAnchor(anchor *pb.Anchor) *sdk.SignedTransaction {
-	m := jsonpb.Marshaler{}
-
-	// Convert to JSON
-	result, _ := m.MarshalToString(anchor)
+	result, _ := proto.Marshal(anchor)
 
 	tx, err := sdk.NewTransferTransaction(
 		sdk.NewDeadline(time.Hour*2),
 		signer.Address,
 		[]*sdk.Mosaic{},
-		sdk.NewPlainMessage(result),
+		sdk.NewPlainMessage(string(result)),
 		networkType,
 	)
 	if err != nil {

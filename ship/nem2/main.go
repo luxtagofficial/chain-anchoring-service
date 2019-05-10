@@ -41,7 +41,7 @@ func main() {
 	// Fetch variables
 	viper.SetEnvPrefix("ship_nem2")
 	viper.AutomaticEnv()
-	pflag.String("dock", "", "Private key of account to send the transaction from")
+	pflag.String("dock", "", "Island gRPC url")
 	pflag.String("name", "", "Ship Blockchain name")
 	pflag.String("version", "", "Ship Blockchain version")
 	pflag.String("wsendpoint", "", "Endpoint url")

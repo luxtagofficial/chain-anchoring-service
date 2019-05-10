@@ -77,10 +77,15 @@ class Island {
     const address = nem.model.address.toAddress(keyPair.publicKey.toString(), networkId);
     const common = nem.model.objects.create('common')('', this.opts.privateKey);
     const endpoint = nem.model.objects.create('endpoint')(this.opts.endpoint.host, this.opts.endpoint.port);
+    const serialized = anchor.serializeBinary();
+    const hex = nem.utils.convert.ua2hex(serialized);
+    // Hack to convert to utf8 as nem-sdk converts message from utf8 to hex by default
+    const utf8 = nem.utils.convert.hex2a(hex);
+    console.log(utf8);
     const transferTransaction = nem.model.objects.create('transferTransaction')(
       address,
       0,
-      JSON.stringify(anchor.toObject()),
+      utf8,
     );
     const transactionEntity = nem.model.transactions.prepare('transferTransaction')(
       common,

@@ -30,6 +30,17 @@ function deserialize_anchor_CallSign(buffer_arg) {
   return anchor_pb.CallSign.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_anchor_Header(arg) {
+  if (!(arg instanceof anchor_pb.Header)) {
+    throw new Error('Expected argument of type anchor.Header');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_anchor_Header(buffer_arg) {
+  return anchor_pb.Header.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_anchor_Lock(arg) {
   if (!(arg instanceof anchor_pb.Lock)) {
     throw new Error('Expected argument of type anchor.Lock');
@@ -57,3 +68,18 @@ var AnnounceService = exports.AnnounceService = {
 };
 
 exports.AnnounceClient = grpc.makeGenericClientConstructor(AnnounceService);
+var InspectService = exports.InspectService = {
+  block: {
+    path: '/anchor.Inspect/Block',
+    requestStream: false,
+    responseStream: false,
+    requestType: anchor_pb.Header,
+    responseType: anchor_pb.Lock,
+    requestSerialize: serialize_anchor_Header,
+    requestDeserialize: deserialize_anchor_Header,
+    responseSerialize: serialize_anchor_Lock,
+    responseDeserialize: deserialize_anchor_Lock,
+  },
+};
+
+exports.InspectClient = grpc.makeGenericClientConstructor(InspectService);
