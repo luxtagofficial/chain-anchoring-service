@@ -587,10 +587,11 @@ proto.anchor.Block.prototype.toObject = function(opt_includeInstance) {
  */
 proto.anchor.Block.toObject = function(includeInstance, msg) {
   var f, obj = {
-    height: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    obsoleteHeight: jspb.Message.getFieldWithDefault(msg, 1, ""),
     hash: jspb.Message.getFieldWithDefault(msg, 2, ""),
     timestamp: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    uriList: jspb.Message.getRepeatedField(msg, 4)
+    uriList: jspb.Message.getRepeatedField(msg, 4),
+    height: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -629,7 +630,7 @@ proto.anchor.Block.deserializeBinaryFromReader = function(msg, reader) {
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setHeight(value);
+      msg.setObsoleteHeight(value);
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
@@ -642,6 +643,10 @@ proto.anchor.Block.deserializeBinaryFromReader = function(msg, reader) {
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.addUri(value);
+      break;
+    case 5:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setHeight(value);
       break;
     default:
       reader.skipField();
@@ -672,7 +677,7 @@ proto.anchor.Block.prototype.serializeBinary = function() {
  */
 proto.anchor.Block.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getHeight();
+  f = message.getObsoleteHeight();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -700,20 +705,27 @@ proto.anchor.Block.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getHeight();
+  if (f !== 0) {
+    writer.writeUint64(
+      5,
+      f
+    );
+  }
 };
 
 
 /**
- * optional string height = 1;
+ * optional string OBSOLETE_height = 1;
  * @return {string}
  */
-proto.anchor.Block.prototype.getHeight = function() {
+proto.anchor.Block.prototype.getObsoleteHeight = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /** @param {string} value */
-proto.anchor.Block.prototype.setHeight = function(value) {
+proto.anchor.Block.prototype.setObsoleteHeight = function(value) {
   jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -774,6 +786,21 @@ proto.anchor.Block.prototype.addUri = function(value, opt_index) {
 
 proto.anchor.Block.prototype.clearUriList = function() {
   this.setUriList([]);
+};
+
+
+/**
+ * optional uint64 height = 5;
+ * @return {number}
+ */
+proto.anchor.Block.prototype.getHeight = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/** @param {number} value */
+proto.anchor.Block.prototype.setHeight = function(value) {
+  jspb.Message.setProto3IntField(this, 5, value);
 };
 
 
@@ -966,7 +993,8 @@ proto.anchor.Header.prototype.toObject = function(opt_includeInstance) {
  */
 proto.anchor.Header.toObject = function(includeInstance, msg) {
   var f, obj = {
-    height: jspb.Message.getFieldWithDefault(msg, 1, 0)
+    height: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    type: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -1007,6 +1035,10 @@ proto.anchor.Header.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {number} */ (reader.readUint64());
       msg.setHeight(value);
       break;
+    case 2:
+      var value = /** @type {!proto.anchor.IslandType} */ (reader.readEnum());
+      msg.setType(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1043,6 +1075,13 @@ proto.anchor.Header.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getType();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -1058,6 +1097,21 @@ proto.anchor.Header.prototype.getHeight = function() {
 /** @param {number} value */
 proto.anchor.Header.prototype.setHeight = function(value) {
   jspb.Message.setProto3IntField(this, 1, value);
+};
+
+
+/**
+ * optional IslandType type = 2;
+ * @return {!proto.anchor.IslandType}
+ */
+proto.anchor.Header.prototype.getType = function() {
+  return /** @type {!proto.anchor.IslandType} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+};
+
+
+/** @param {!proto.anchor.IslandType} value */
+proto.anchor.Header.prototype.setType = function(value) {
+  jspb.Message.setProto3EnumField(this, 2, value);
 };
 
 

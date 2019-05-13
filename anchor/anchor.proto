@@ -38,10 +38,11 @@ message Lock {
 }
 
 message Block {
-  string height = 1;
+  string OBSOLETE_height = 1;
   string hash = 2;
   string timestamp = 3;
   repeated string uri = 4;
+  uint64 height = 5;
 }
 
 message CallSign {

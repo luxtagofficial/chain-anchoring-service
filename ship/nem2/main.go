@@ -101,7 +101,7 @@ func main() {
 				Version: version,
 				Name:    name,
 				Block: &pb.Block{
-					Height:    data.Height.String(),
+					Height:    data.Height.Uint64(),
 					Hash:      data.Hash,
 					Timestamp: data.Timestamp.String(),
 				},
