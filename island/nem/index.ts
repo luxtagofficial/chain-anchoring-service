@@ -81,7 +81,6 @@ class Island {
     const hex = nem.utils.convert.ua2hex(serialized);
     // Hack to convert to utf8 as nem-sdk converts message from utf8 to hex by default
     const utf8 = nem.utils.convert.hex2a(hex);
-    console.log(utf8);
     const transferTransaction = nem.model.objects.create('transferTransaction')(
       address,
       0,

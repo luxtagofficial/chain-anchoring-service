@@ -39,6 +39,8 @@ cp .env.example .env
 Then export the variables to shell
 ```
 export $(grep -v '^#' .env | xargs -d '\n')
+# or
+make export
 ```
 
 Start the server

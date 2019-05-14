@@ -80,6 +80,7 @@ func (s *server) Location(ctx context.Context, lock *pb.Lock) (*pb.CallSign, err
 
 	anchor := s.generateAnchor(lock)
 	signedTx := s.announceAnchor(anchor)
+	log.Println(anchor)
 
 	return &pb.CallSign{Id: signedTx.Hash.String()}, nil
 }

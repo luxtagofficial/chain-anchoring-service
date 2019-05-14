@@ -101,9 +101,9 @@ func main() {
 				Version: version,
 				Name:    name,
 				Block: &pb.Block{
-					Height:    data.Height.Uint64(),
 					Hash:      data.Hash,
 					Timestamp: data.Timestamp.String(),
+					Height:    data.Height.Uint64(),
 				},
 			}
 			txHash, err := c.Location(context.Background(), lock)
