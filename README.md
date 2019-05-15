@@ -15,8 +15,6 @@ Placing all transactions on a public blockchain will guarantee that every single
 
 We will designate the public blockchain as **islands** and the private blockchain as **ships**.
 
-![](./docs/cas-demo.gif)
-
 ## Verifying
 
 Verification service will run in two parts, an **inspector** service that generates a list of block headers stored on the public blockchain, and a **skipper** that fetches block headers from the private blockchain for the inspector to verify.
@@ -27,11 +25,61 @@ Verification service will run in two parts, an **inspector** service that genera
 2. Parse payload to anchor format
 3. Show list of locks found
 4. Sort by height and chain
-5. For each anchor, ask ship for anchor at height
+5. For each lock, ask skipper for anchor at height
 6. Compare and display
 
+## Quick start
+
+### Prerequisites
+```sh
+# Copy `.env.example` to `.env`
+cp .env.example .env
+
+# Install dependencies
+make install
+
+# Update .proto files
+make proto
+```
+
+### Running anchoring service
+
+Ensure that the environment files are set in `.env`
+
+Start the target island:
+```
+make island target=nem2
+```
+
+Followed by the appropriate ship:
+```
+make ship target=nem2
+```
+
+Example:
+![](./docs/cas-demo.gif)
+
+### Running verifier service
+
+Set correct environment variables in `.env`
+
+Start the skipper:
+```
+make skipper target=nem2
+```
+
+Start the inspector:
+```
+make inspector target=nem2
+
+Example:
 ![](./docs/cav-demo.gif)
+```
 
-## How to run
+## How to build
 
-For details on how to use this project see [HOW-TO-BUILD.md](./HOW-TO-BUILD.md)
+For details on how to build this project see [HOW-TO-BUILD.md](./HOW-TO-BUILD.md)
+
+## Contributing
+
+If there is a blockchain implementation that is missing feel free to submit an issue or a PR (even better!). You can use the implementations here as a baseline.

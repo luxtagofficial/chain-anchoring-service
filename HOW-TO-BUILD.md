@@ -1,23 +1,8 @@
-## Anchoring
+## How to build go packages
 
 ### Prerequisites
 
 Requires a minimum version of `go@1.11`
-
-### Quick start
-
-```sh
-# Copy `.env.example` to `.env`
-cp .env.example .env
-
-# Install go dependencies
-make install
-
-# Start docker compose
-docker-compose up
-```
-
-### How to build
 
 Make sure you have go installed (https://golang.org/doc/install)
 
