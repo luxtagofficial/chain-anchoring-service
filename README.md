@@ -11,7 +11,7 @@ The use of blockchain is mainly to show two things:
   1. That the data exists at a certain point of time; and
   2. That the data did not change after that point of time.
 
-Placing all transactions on a public blockchain will guarantee that every single transaction existed at a certain point of time and did not change after that time. However, in most cases it is sufficient to show prove that data up to a certain point of time (at the time of anchoring) is valid and did not change.
+> Placing all transactions on a public blockchain will guarantee that every single transaction existed at a certain point of time and did not change after that time. However, in most cases it is sufficient to show prove that data up to a certain point of time (at the time of anchoring) is valid and did not change.
 
 We will designate the public blockchain as **islands** and the private blockchain as **ships**.
 
