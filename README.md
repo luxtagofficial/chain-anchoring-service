@@ -44,7 +44,7 @@ make proto
 
 ### Running anchoring service
 
-Ensure that the environment files are set in `.env`
+Set correct environment variables in `.env`
 
 Start the target island:
 ```
