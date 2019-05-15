@@ -71,10 +71,10 @@ make skipper target=nem2
 Start the inspector:
 ```
 make inspector target=nem2
+```
 
 Example:
 ![](./docs/cav-demo.gif)
-```
 
 ## How to build
 
