@@ -15,6 +15,8 @@ Placing all transactions on a public blockchain will guarantee that every single
 
 We will designate the public blockchain as **islands** and the private blockchain as **ships**.
 
+![](./docs/cas-demo.gif)
+
 ## Verifying
 
 Verification service will run in two parts, an **inspector** service that generates a list of block headers stored on the public blockchain, and a **skipper** that fetches block headers from the private blockchain for the inspector to verify.
@@ -27,6 +29,8 @@ Verification service will run in two parts, an **inspector** service that genera
 4. Sort by height and chain
 5. For each anchor, ask ship for anchor at height
 6. Compare and display
+
+![](./docs/cav-demo.gif)
 
 ## How to run
 

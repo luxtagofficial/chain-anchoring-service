@@ -50,7 +50,7 @@ class Skipper {
 
   private block(call, callback) {
     const reply = new messages.Lock();
-    console.log(`Received verification request for block height ${call.request.getHeight()}`);
+    console.log(`Verification request for block height ${call.request.getHeight()}`);
     const blockInfo = this.getBlockInfo(call.request);
     blockInfo.subscribe((b) => {
       const block = new messages.Block();
