@@ -15,18 +15,17 @@ Placing all transactions on a public blockchain will guarantee that every single
 
 We will designate the public blockchain as **islands** and the private blockchain as **ships**.
 
+### Sequence diagram
+
+![](./docs/cas-sequence.svg)
+
 ## Verifying
 
 Verification service will run in two parts, an **inspector** service that generates a list of block headers stored on the public blockchain, and a **skipper** that fetches block headers from the private blockchain for the inspector to verify.
 
-### Generic overview of verifier functions
+### Sequence diagram
 
-1. Fetch transaction payload
-2. Parse payload to anchor format
-3. Show list of locks found
-4. Sort by height and chain
-5. For each lock, ask skipper for anchor at height
-6. Compare and display
+![](./docs/cav-sequence.svg)
 
 ## Quick start
 
