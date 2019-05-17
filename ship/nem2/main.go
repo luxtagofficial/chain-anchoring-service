@@ -103,7 +103,7 @@ func main() {
 				Block: &pb.Block{
 					Hash:      data.Hash,
 					Timestamp: data.Timestamp.String(),
-					Height:    data.Height.Uint64(),
+					Height:    data.Height.String(),
 				},
 			}
 			txHash, err := c.Location(context.Background(), lock)

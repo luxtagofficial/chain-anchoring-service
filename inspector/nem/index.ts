@@ -16,9 +16,11 @@
 *
 */
 
+import grpc from 'grpc';
 import * as nemSDK from 'nem-sdk';
 import yargs from 'yargs';
-import * as messages from './anchor/anchor_pb';
+import services from './anchor/anchor_grpc_pb';
+import messages from './anchor/anchor_pb';
 
 const nem = nemSDK.default;
 
@@ -32,28 +34,30 @@ interface IOptions {
 }
 
 class Inspector {
-  private opts: IOptions;
+
+public IOptions;   private opts: IOptions;
   private endpoint: any;
+  private skipper: services.InspectClient;
 
   public constructor() {
     this.opts = this.parseArguments();
     this.endpoint = nem.model.objects.create('endpoint')(this.opts.endpoint.host, this.opts.endpoint.port);
+    this.skipper = new services.InspectClient(this.opts.skipper, grpc.credentials.createInsecure());
   }
 
   public fetchAnchors() {
+    let lockList: messages.Lock[] = [];
     nem.com.requests.account.transactions.all(this.endpoint, this.opts.address).then(
       (txs) => {
         if (txs.data) {
           txs.data.forEach((tx) => {
-            // console.log(tx.transaction);
             const messageObj = tx.transaction.message;
-            if (messageObj) {
+            if (messageObj && messageObj.payload) {
               try {
                 const anchor = messages.Anchor.deserializeBinary(hextoUint8Arr(messageObj.payload));
                 // Ignore anchor with no locks
                 if (anchor.getLocksList().length !== 0) {
-                  console.log(messageObj.payload);
-                  console.log(anchor.toObject());
+                  lockList = lockList.concat(anchor.getLocksList());
                 }
               } catch (e) {
                 // Ignore messages that cannot be parsed
@@ -63,10 +67,43 @@ class Inspector {
         }
       },
       (err) => console.error(err),
+    ).finally(
+      async () => {
+        const locks = lockList.filter((lock) => lock.getBlock()!.getHeight() !== '');
+        console.log(`Found ${locks.length} anchors`);
+        for (const lock of locks) {
+          console.log(`Verifying block at height ${lock.getBlock()!.getHeight()}`);
+          await this.verifyLock(lock);
+        }
+      },
     );
   }
 
-  private parseArguments(): IOptions {
+  private verifyLock(lock: messages.Lock): Promise<boolean> {
+    const block = lock.getBlock();
+    const header = new messages.Header();
+    header.setHeight(parseInt(block!.getHeight(), 10));
+    header.setType(lock.getType());
+    return new Promise((resolve, reject) => {
+      this.skipper.block(header, (err, resp) => {
+        if (err) {
+          reject(err);
+        }
+        const block2 = resp.getBlock();
+        if (block!.getHeight() === block2!.getHeight()) {
+          if (block!.getHash() === block2!.getHash()) {
+            console.log(`Height ${block!.getHeight()}: Verified`);
+            resolve(true);
+          } else {
+            console.log(`Height ${block!.getHeight()}: Invalid`);
+            resolve(false);
+          }
+        }
+      });
+    });
+  }
+
+  private parseArguments() {
     const args = yargs
     .help('help').alias('help', 'h')
     .env('INSPECTOR_NEM')

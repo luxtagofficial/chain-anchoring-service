@@ -54,7 +54,7 @@ class Skipper {
     const blockInfo = this.getBlockInfo(call.request);
     blockInfo.subscribe((b) => {
       const block = new messages.Block();
-      block.setHeight(b.height.compact());
+      block.setHeight(b.height.compact().toString());
       block.setHash(b.hash);
       block.setTimestamp(b.timestamp.compact().toString());
       reply.setBlock(block);

@@ -6,7 +6,7 @@ PACKAGE="github.com/luxtagofficial/chain-anchoring-service"
 
 # Compile .proto files
 # usage: make proto
-proto: proto-go proto-island-nem proto-inspector-nem proto-inspector-nem2
+proto: proto-go proto-island-nem proto-inspector-nem proto-inspector-nem2 proto-skipper-nem2
 
 proto-go:
 	@echo "*****Generating proto go files*****"
@@ -25,6 +25,11 @@ proto-inspector-nem:
 proto-inspector-nem2:
 	@echo "*****Inspector nem2 package*****"
 	@cd ${PWD}/inspector/nem2/ && \
+	yarn run proto
+
+proto-skipper-nem2:
+	@echo "*****Skipper nem2 package*****"
+	@cd ${PWD}/skipper/nem2/ && \
 	yarn run proto
 
 export:

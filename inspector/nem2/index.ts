@@ -73,7 +73,7 @@ class Inspector {
       filter((lockList) => lockList.length > 0),
       concatMap(
         (lockList) => {
-          return lockList.filter((lock) => lock.getBlock()!.getHeight() !== 0);
+          return lockList.filter((lock) => lock.getBlock()!.getHeight() !== '');
         },
       ),
       map(
@@ -93,7 +93,7 @@ class Inspector {
   private verifyLock(lock: messages.Lock): Promise<boolean> {
     const block = lock.getBlock();
     const header = new messages.Header();
-    header.setHeight(block!.getHeight());
+    header.setHeight(parseInt(block!.getHeight(), 10));
     header.setType(lock.getType());
     return new Promise((resolve, reject) => {
       this.skipper.block(header, (err, resp) => {

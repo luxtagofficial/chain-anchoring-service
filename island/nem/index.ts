@@ -57,6 +57,7 @@ class Island {
     const reply = new messages.CallSign();
     const anchor = this.generateAnchor(call.request);
     this.announceAnchor(anchor).then((response) => {
+      console.log(response);
       reply.setId(response.transactionHash.data);
       callback(null, reply);
     });
@@ -65,9 +66,9 @@ class Island {
   private generateAnchor(lock: messages.Lock): messages.Anchor {
     const anchor = new messages.Anchor();
     anchor.setDescription('LuxTag Chain Anchoring Service');
-    anchor.setVersion('1.0.1');
+    anchor.setVersion('1.0.2');
     anchor.setTarget(messages.IslandType.NEM);
-    anchor.addLocks(lock, 0);
+    anchor.addLocks(lock);
     return anchor;
   }
 
@@ -140,6 +141,12 @@ class Island {
     };
   }
 }
+
+// function ua2str(uintArray) {
+//   const encodedString = String.fromCharCode.apply(null, uintArray);
+//   const decodedString = decodeURIComponent(escape(encodedString));
+//   return decodedString;
+// }
 
 function main() {
   const island = new Island();

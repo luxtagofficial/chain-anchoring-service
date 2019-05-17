@@ -81,8 +81,8 @@ export namespace Lock {
 }
 
 export class Block extends jspb.Message { 
-    getObsoleteHeight(): string;
-    setObsoleteHeight(value: string): void;
+    getHeight(): string;
+    setHeight(value: string): void;
 
     getHash(): string;
     setHash(value: string): void;
@@ -94,9 +94,6 @@ export class Block extends jspb.Message {
     getUriList(): Array<string>;
     setUriList(value: Array<string>): void;
     addUri(value: string, index?: number): string;
-
-    getHeight(): number;
-    setHeight(value: number): void;
 
 
     serializeBinary(): Uint8Array;
@@ -111,11 +108,10 @@ export class Block extends jspb.Message {
 
 export namespace Block {
     export type AsObject = {
-        obsoleteHeight: string,
+        height: string,
         hash: string,
         timestamp: string,
         uriList: Array<string>,
-        height: number,
     }
 }
 
