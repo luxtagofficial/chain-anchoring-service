@@ -1,6 +1,8 @@
 # LuxTag Chain Anchoring Service
 
-## Anchoring
+<p align="center">
+  <img alt="Apostille" src="./docs/luxtag-logo.png" height="200" />
+</p>
 
 The goal of chain anchoring is to secure the data integrity of a smaller private chain to a larger public chain for audibility without the high cost of transactions on a public chain.
 
@@ -13,7 +15,9 @@ The use of blockchain is mainly to show two things:
 
 > Placing all transactions on a public blockchain will guarantee that every single transaction existed at a certain point of time and did not change after that time. However, in most cases it is sufficient to show prove that data up to a certain point of time (at the time of anchoring) is valid and did not change.
 
-We will designate the public blockchain as **islands** and the private blockchain as **ships**.
+## Anchoring
+
+For anchoring, we will designate the public blockchain as **islands** and the private blockchain as **ships**.
 
 ### Sequence diagram
 
