@@ -22,8 +22,8 @@
     "typescript": "^3.3.3333"
   },
   "dependencies": {
-    "google-protobuf": "^3.7.0-rc.3",
-    "grpc": "^1.18.0",
+    "google-protobuf": "^3.8.0",
+    "grpc": "^1.21.1",
     "nem-sdk": "^1.6.7"
   },
   "resolutions": {
