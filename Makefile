@@ -12,6 +12,12 @@ proto-go:
 	@echo "*****Generating proto go files*****"
 	protoc -I anchor --go_out=plugins=grpc:anchor anchor/anchor.proto
 
+# Ensure installation of protoc-gen-grpc-web plugin
+# https://github.com/grpc/grpc-web#code-generator-plugin
+proto-web:
+	@echo "*****Generating proto grpc-web files*****"
+	protoc -I=./anchor anchor.proto --js_out=import_style=commonjs:./anchor --grpc-web_out=import_style=commonjs+dts,mode=grpcweb:./anchor
+
 proto-island-nem:
 	@echo "*****Island nem package*****"
 	@cd ${PWD}/island/nem/ && \
