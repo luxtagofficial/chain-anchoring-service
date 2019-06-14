@@ -1,0 +1,19 @@
+{
+    "name": "cas-inspector",
+    "public": false,
+    "version": 2,
+    "builds": [
+        {
+            "src": "now-handler/*.ts",
+            "use": "@now/node",
+            "config": {
+                "maxLambdaSize": "50mb"
+            }
+        }
+    ],
+    "routes": [
+    	{ "src": "/(.+)/(.+)", "dest": "now-handler/$1.ts" },
+    	{ "src": "/(.+)/", "dest": "now-handler/$1.ts" },
+    	{ "src": "/(.+)", "dest": "now-handler/$1.ts" }
+    ]
+}

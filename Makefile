@@ -4,6 +4,10 @@ export
 # VARIABLES
 PACKAGE="github.com/luxtagofficial/chain-anchoring-service"
 
+deploy-inspector:
+	@echo "*****Deploying inspector to now.sh*****"
+	@now inspector
+
 # Compile .proto files
 # usage: make proto
 proto: proto-go proto-island-nem proto-inspector-nem proto-inspector-nem2 proto-skipper-nem2
