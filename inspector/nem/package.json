@@ -9,8 +9,8 @@
   "scripts": {
     "dev": "ts-node index.ts",
     "proto": "yarn run proto-generate && yarn run proto-generate-types",
-    "proto-generate": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./anchor --grpc_out=./anchor --plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` -I ../../anchor anchor.proto",
-    "proto-generate-types": "protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./anchor -I ../../anchor anchor.proto"
+    "proto-generate": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./_proto --grpc_out=./_proto --plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` -I ../../anchor anchor.proto",
+    "proto-generate-types": "protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./_proto -I ../../anchor anchor.proto"
   },
   "devDependencies": {
     "@types/node": "^12.0.0",
@@ -23,7 +23,8 @@
   "dependencies": {
     "google-protobuf": "^3.8.0",
     "grpc": "^1.21.1",
-    "nem-sdk": "^1.6.7"
+    "nem-sdk": "^1.6.7",
+    "url": "^0.11.0"
   },
   "resolutions": {
     "request": "2.88.0"
