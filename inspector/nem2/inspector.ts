@@ -16,45 +16,66 @@
  *
  */
 import grpc from 'grpc';
-import { AccountHttp, NetworkType, PublicAccount, QueryParams, TransferTransaction } from 'nem2-sdk';
+import {
+  AccountHttp,
+  NetworkType,
+  PublicAccount,
+  QueryParams,
+  TransferTransaction
+} from 'nem2-sdk';
 import { EMPTY } from 'rxjs';
 import { concatMap, count, expand, filter, map } from 'rxjs/operators';
-import yargs from 'yargs';
-import services from './anchor/anchor_grpc_pb';
-import messages from './anchor/anchor_pb';
+import * as services from './_proto/anchor_grpc_pb';
+import * as messages from './_proto/anchor_pb';
 
-interface IOptions {
-  publicAccount: PublicAccount;
+export interface IInspectorOptions {
   endpoint: string;
   skipper: string;
+
+  publicKey: string;
+  networkType: string;
 }
 
-class Inspector {
-  private opts: IOptions;
-  private accountHttp: AccountHttp;
+export class Inspector {
+  private opts: IInspectorOptions;
   private skipper: services.InspectClient;
+  private accountHttp: AccountHttp;
+  private publicAccount: PublicAccount;
 
-  public constructor() {
-    this.opts = this.parseArguments();
-    this.accountHttp = new AccountHttp(this.opts.endpoint);
+  public constructor(opts: IInspectorOptions) {
+    this.opts = opts;
+
     this.skipper = new services.InspectClient(this.opts.skipper, grpc.credentials.createInsecure());
+    this.accountHttp = new AccountHttp(this.opts.endpoint);
+
+    // Test address
+    let publicAccount: PublicAccount;
+    try {
+      const networkType = getNetwork(this.opts.networkType);
+      this.publicAccount = PublicAccount.createFromPublicKey(this.opts.publicKey, networkType);
+    } catch (e) {
+      console.log(e);
+      throw Error('NEM address is not valid');
+    }
   }
 
-  public fetchAnchors() {
+  public async fetchAnchors() {
     const pageSize: number = 100;
     let queryParams = new QueryParams(pageSize);
-    this.accountHttp.transactions(this.opts.publicAccount, queryParams).pipe(
+
+    let anchors = []
+
+    const lockList = await this.accountHttp.transactions(this.publicAccount, queryParams).pipe(
       expand( (transactions) => {
         queryParams = new QueryParams(pageSize, transactions[transactions.length - 1].transactionInfo!.id);
         return transactions.length >= pageSize
-          ? this.accountHttp.transactions(this.opts.publicAccount, queryParams)
+          ? this.accountHttp.transactions(this.publicAccount, queryParams)
           : EMPTY;
       }),
       concatMap(
-        (txs) => {
-          // console.log(txs);
-          return txs.map((tx) => {
-            let lockList: messages.Lock[] = [];
+        async (txs) => {
+          let lockList: messages.Lock[] = [];
+          await Promise.all(txs.map((tx) => {
             if (tx instanceof TransferTransaction) {
               try {
                 const anchor = messages.Anchor.deserializeBinary(str2arr(tx.message.payload));
@@ -66,28 +87,26 @@ class Inspector {
                 // console.log(e);
               }
             }
-            return lockList;
-          });
+          }));
+          return lockList;
         },
-      ),
-      filter((lockList) => lockList.length > 0),
-      concatMap(
-        (lockList) => {
-          return lockList.filter((lock) => lock.getBlock()!.getHeight() !== '');
-        },
-      ),
-      map(
-        async (lock) => {
-          const reply = await this.verifyLock(lock);
-          return reply;
-        },
-      ),
-      count(),
-    ).subscribe(
-      (sum) => {
-        console.log(`Found ${sum} anchors`);
-      },
-    );
+      )
+    ).toPromise();
+
+    let verifyLocks = []
+    for (var i = 0; i < lockList.length; i++) {
+      const block = lockList[i].getBlock()
+      if (block.getHeight()) {
+        const valid = await this.verifyLock(lockList[i])
+        anchors.push({
+          height: block.getHeight(),
+          hash: block.getHash(),
+          valid
+        })
+      }
+    }
+
+    return anchors;
   }
 
   private verifyLock(lock: messages.Lock): Promise<boolean> {
@@ -95,11 +114,13 @@ class Inspector {
     const header = new messages.Header();
     header.setHeight(parseInt(block!.getHeight(), 10));
     header.setType(lock.getType());
+
     return new Promise((resolve, reject) => {
       this.skipper.block(header, (err, resp) => {
         if (err) {
           reject(err);
         }
+
         const block2 = resp.getBlock();
         if (block!.getHeight() === block2!.getHeight()) {
           if (block!.getHash() === block2!.getHash()) {
@@ -112,47 +133,6 @@ class Inspector {
         }
       });
     });
-  }
-
-  private parseArguments(): IOptions {
-    const args = yargs
-      .help('help').alias('help', 'h')
-      .env('INSPECTOR_NEM2')
-      .option('skipper', {
-        alias: 'l',
-        description: 'Skipper gRPC url',
-        type: 'string',
-      })
-      .option('endpoint', {
-        alias: 'e',
-        description: 'Catapult endpoint',
-        type: 'string',
-      })
-      .option('publicKey', {
-        alias: 'pk',
-        description: 'Public key of account to fetch transactions from',
-        type: 'string',
-      })
-      .option('networkType', {
-        alias: 'n',
-        description: 'NEM node endpoint type. Choose from `MIJIN_TEST`',
-        type: 'string',
-      })
-      .argv;
-    // Test address
-    let publicAccount: PublicAccount;
-    try {
-      const networkType = getNetwork(args.networkType);
-      publicAccount = PublicAccount.createFromPublicKey(args.publicKey, networkType);
-    } catch (e) {
-      console.log(e);
-      throw Error('NEM address is not valid');
-    }
-    return {
-      endpoint: args.endpoint,
-      publicAccount,
-      skipper: args.skipper,
-    };
   }
 }
 
@@ -175,10 +155,3 @@ function getNetwork(network: string): NetworkType {
   }
   throw new Error('Introduce a valid network type');
 }
-
-function main() {
-  const inspector = new Inspector();
-  inspector.fetchAnchors();
-}
-
-main();
