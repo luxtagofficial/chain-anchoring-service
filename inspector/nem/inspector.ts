@@ -87,6 +87,11 @@ export class Inspector {
         if (err) {
           reject(err);
         }
+
+        if (!resp) {
+          throw new Error("upstream returns undefined response. is the service online?")
+        }
+
         const block2 = resp.getBlock();
         if (block!.getHeight() === block2!.getHeight()) {
           if (block!.getHash() === block2!.getHash()) {

@@ -16,7 +16,6 @@
  *
  */
 
-import { NetworkType, PublicAccount } from 'nem2-sdk';
 import yargs from 'yargs';
 import { Inspector, IInspectorOptions } from './inspector';
 
@@ -52,19 +51,6 @@ function parseArguments(): IInspectorOptions {
     publicKey: args.publicKey,
     skipper: args.skipper,
   };
-}
-
-function getNetwork(network: string): NetworkType {
-  if (network === 'MAIN_NET') {
-    return NetworkType.MAIN_NET;
-  } else if (network === 'TEST_NET') {
-    return NetworkType.TEST_NET;
-  } else if (network === 'MIJIN') {
-    return NetworkType.MIJIN;
-  } else if (network === 'MIJIN_TEST') {
-    return NetworkType.MIJIN_TEST;
-  }
-  throw new Error('Introduce a valid network type');
 }
 
 function main() {

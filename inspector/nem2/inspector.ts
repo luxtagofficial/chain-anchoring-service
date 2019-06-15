@@ -24,7 +24,7 @@ import {
   TransferTransaction
 } from 'nem2-sdk';
 import { EMPTY } from 'rxjs';
-import { concatMap, count, expand, filter, map } from 'rxjs/operators';
+import { concatMap, expand } from 'rxjs/operators';
 import * as services from './_proto/anchor_grpc_pb';
 import * as messages from './_proto/anchor_pb';
 
@@ -34,6 +34,12 @@ export interface IInspectorOptions {
 
   publicKey: string;
   networkType: string;
+}
+
+export type InspectedAnchor = {
+  height: string;
+  hash: string;
+  valid: boolean;
 }
 
 export class Inspector {
@@ -48,8 +54,6 @@ export class Inspector {
     this.skipper = new services.InspectClient(this.opts.skipper, grpc.credentials.createInsecure());
     this.accountHttp = new AccountHttp(this.opts.endpoint);
 
-    // Test address
-    let publicAccount: PublicAccount;
     try {
       const networkType = getNetwork(this.opts.networkType);
       this.publicAccount = PublicAccount.createFromPublicKey(this.opts.publicKey, networkType);
@@ -63,7 +67,7 @@ export class Inspector {
     const pageSize: number = 100;
     let queryParams = new QueryParams(pageSize);
 
-    let anchors = []
+    let anchors: InspectedAnchor[] = []
 
     const lockList = await this.accountHttp.transactions(this.publicAccount, queryParams).pipe(
       expand( (transactions) => {
@@ -93,13 +97,13 @@ export class Inspector {
       )
     ).toPromise();
 
-    let verifyLocks = []
     for (var i = 0; i < lockList.length; i++) {
-      const block = lockList[i].getBlock()
-      if (block.getHeight()) {
+      const block = lockList[i].getBlock()!
+      const height = block.getHeight()
+      if (height) {
         const valid = await this.verifyLock(lockList[i])
         anchors.push({
-          height: block.getHeight(),
+          height,
           hash: block.getHash(),
           valid
         })
@@ -119,6 +123,10 @@ export class Inspector {
       this.skipper.block(header, (err, resp) => {
         if (err) {
           reject(err);
+        }
+
+        if (!resp) {
+          throw new Error("upstream returns undefined response. is the service online?")
         }
 
         const block2 = resp.getBlock();
