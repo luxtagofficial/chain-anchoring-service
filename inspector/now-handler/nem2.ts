@@ -14,10 +14,11 @@ export default async function (req, res) {
 	const inspector = new Inspector({
 		endpoint,
 		skipper,
+
 		publicKey,
 		networkType,
 	} as IInspectorOptions);
-  	const anchors = await inspector.fetchAnchors();
 
+  	const anchors = await inspector.fetchAnchors();
 	res.end(JSON.stringify(anchors));
 };

@@ -3,12 +3,14 @@ import { parse } from 'url'
 import { Skipper, ISkipperOptions } from '../nem2/skipper'
 import * as messages from '../nem2/_proto/anchor_pb'
 
+const SHIP_ENDPOINT = process.env.SHIP_ENDPOINT
+
 export default async function (req, res) {
 	const { pathname, query = {} } = parse(req.url, true)
 	const [ handlerName, height ] = pathname.split('/').splice(1)
 
 	const { endpoint } = query
-	const { protocol, hostname, port } = parse(endpoint as string)
+	const { protocol, hostname, port } = parse(SHIP_ENDPOINT as string)
 
 	const skipper = new Skipper({
 		endpoint: protocol + '//' + hostname,

@@ -43,19 +43,29 @@ function parseArguments(): IInspectorOptions {
       description: 'NEM node endpoint type. Choose from `MIJIN_TEST`',
       type: 'string',
     })
+    .option('useRestSkipper', {
+      alias: 'y',
+      description: 'Whether to use grpc-based skipper or REST-based.',
+      type: 'boolean',
+    })
     .argv;
 
   return {
     endpoint: args.endpoint,
     networkType: args.networkType,
     publicKey: args.publicKey,
+
+    // if skipper has http or https prefix, rest skipper will be used.
     skipper: args.skipper,
   };
 }
 
-function main() {
+async function main() {
   const inspector = new Inspector(parseArguments() as IInspectorOptions);
-  inspector.fetchAnchors();
+  const anchors = await inspector.fetchAnchors();
+  anchors.forEach(anchor => {
+    console.log(`Height ${anchor.height}: ${anchor.valid ? 'Verified' : 'Invalid'}`);
+  })
 }
 
 main();

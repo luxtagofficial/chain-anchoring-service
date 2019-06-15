@@ -15,6 +15,7 @@
  * limitations under the License.
  *
  */
+
 import grpc from 'grpc';
 import {
   AccountHttp,
@@ -27,6 +28,7 @@ import { EMPTY } from 'rxjs';
 import { concatMap, expand } from 'rxjs/operators';
 import * as services from './_proto/anchor_grpc_pb';
 import * as messages from './_proto/anchor_pb';
+import useRestSkipper from '../useRestSkipper';
 
 export interface IInspectorOptions {
   endpoint: string;
@@ -44,14 +46,21 @@ export type InspectedAnchor = {
 
 export class Inspector {
   private opts: IInspectorOptions;
-  private skipper: services.InspectClient;
+  private skipper: services.InspectClient | any;
   private accountHttp: AccountHttp;
   private publicAccount: PublicAccount;
+  private useRestSkipper: boolean;
 
   public constructor(opts: IInspectorOptions) {
     this.opts = opts;
 
-    this.skipper = new services.InspectClient(this.opts.skipper, grpc.credentials.createInsecure());
+    this.useRestSkipper = this.opts.skipper.startsWith('http')
+    if (this.useRestSkipper) {
+      this.skipper = useRestSkipper(this.opts.skipper)
+    } else {
+      this.skipper = new services.InspectClient(this.opts.skipper, grpc.credentials.createInsecure());
+    }
+
     this.accountHttp = new AccountHttp(this.opts.endpoint);
 
     try {
@@ -113,11 +122,25 @@ export class Inspector {
     return anchors;
   }
 
-  private verifyLock(lock: messages.Lock): Promise<boolean> {
-    const block = lock.getBlock();
+  private async verifyLock(lock: messages.Lock): Promise<boolean> {
+    const island = lock.getBlock()!.toObject();
     const header = new messages.Header();
-    header.setHeight(parseInt(block!.getHeight(), 10));
-    header.setType(lock.getType());
+    header.setHeight(parseInt(island.height, 10));
+    header.setType(lock.getType())
+
+    if (this.useRestSkipper) {
+      try {
+        const ship = await this.skipper.fetchRest(island.height);
+        if (island.height === ship.height) {
+          return island.hash === ship.hash
+        }
+        console.log("[WARN] HEIGHT NOT SAME", {ship, island})
+        return false
+      } catch (e) {
+        console.log("fetchRest error:", e)
+        return false
+      }
+    }
 
     return new Promise((resolve, reject) => {
       this.skipper.block(header, (err, resp) => {
@@ -129,15 +152,9 @@ export class Inspector {
           throw new Error("upstream returns undefined response. is the service online?")
         }
 
-        const block2 = resp.getBlock();
-        if (block!.getHeight() === block2!.getHeight()) {
-          if (block!.getHash() === block2!.getHash()) {
-            console.log(`Height ${block!.getHeight()}: Verified`);
-            resolve(true);
-          } else {
-            console.log(`Height ${block!.getHeight()}: Invalid`);
-            resolve(false);
-          }
+        const ship = resp.getBlock()!.toObject();
+        if (island.height === ship.height) {
+          resolve(island.hash === ship.hash);
         }
       });
     });
