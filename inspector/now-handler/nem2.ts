@@ -1,24 +1,43 @@
 import { parse } from 'url'
+import { send } from 'micro'
 
 import { Inspector, IInspectorOptions } from '../nem2/inspector'
+import { Joi, validate } from '../joi-utils'
 
-export default async function (req, res) {
+const fetchAnchorsArgsSchema = Joi.object().keys({
+	endpoint: Joi.string().required(),
+	publicKey: Joi.string().required(),
+	networkType: Joi.string().required(),
+	skipper: Joi.string().required(),
+});
+
+const fetchAnchors = async (args: IInspectorOptions) => {
+	const i = new Inspector(args);
+  	return await i.fetchAnchors();
+}
+
+export const withPayload = ({inspector, skipper}) => async (res) => {
+	const anchors = await fetchAnchors({
+		endpoint: inspector.endpoint,
+		skipper: skipper.endpoint,
+
+		publicKey: inspector.account,
+		networkType: inspector.networkType,
+	});
+	return send(res, 200, { anchors });
+}
+
+export default async (req, res) => {
 	const { pathname, query = {} } = parse(req.url, true)
 	const [ handlerName, height ] = pathname.split('/').splice(1)
 
-	const { endpoint, publicKey, networkType, skipper } = query
-
+	const payloadError = validate(fetchAnchorsArgsSchema, query)
+	if (payloadError) {
+		return send(res, 400, payloadError)
+	}
+	
 	// TODO: handle height or pagination
 
-	// account can be public key or address of blockchain account.
-	const inspector = new Inspector({
-		endpoint,
-		skipper,
-
-		publicKey,
-		networkType,
-	} as IInspectorOptions);
-
-  	const anchors = await inspector.fetchAnchors();
-	res.end(JSON.stringify(anchors));
+	const anchors = await fetchAnchors({ ...(<unknown>query) } as IInspectorOptions);
+	return send(res, 200, { anchors });
 };

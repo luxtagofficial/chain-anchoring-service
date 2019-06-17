@@ -2,7 +2,7 @@ import { parse } from 'url'
 
 import { Inspector, IInspectorOptions } from '../nem/inspector'
 
-export default async function (req, res) {
+export default async (req, res) => {
 	const { pathname, query = {} } = parse(req.url, true)
 	const [ handlerName, height ] = pathname.split('/').splice(1)
 
