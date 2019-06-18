@@ -22,7 +22,10 @@ export default async function (req, res) {
 
 	const payloadError = validate(schema, { shipID, height})
 	if (payloadError) {
-		return send(res, 400, payloadError)
+		return send(res, 400, {
+			...payloadError,
+			error: "request does not satisfy path params of '/{shipID}/{height}'",
+		})
 	}
 
 	const ship = ships[shipID]
