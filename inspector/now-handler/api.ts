@@ -1,5 +1,5 @@
 import { json, send } from 'micro'
-import { Joi, validate } from './utils/joi'
+import { Joi, validate } from './utils/validator'
 
 const payloadSchema = Joi.object().keys({
 	inspector: {

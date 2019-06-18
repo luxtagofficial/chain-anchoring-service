@@ -1,7 +1,7 @@
 import { parse } from 'url'
 import { send } from 'micro'
 
-import { Joi, validate } from './utils/joi'
+import { Joi, validate } from './utils/validator'
 import ships from './ships.json'
 
 export type Ship = {

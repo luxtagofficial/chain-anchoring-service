@@ -2,7 +2,7 @@ import { parse } from 'url'
 import { send } from 'micro'
 
 import { Inspector, IInspectorOptions } from '../nem2/inspector'
-import { Joi, validate } from './utils/joi'
+import { Joi, validate, getMetaError } from './utils/validator'
 
 const fetchAnchorsArgsSchema = Joi.object().keys({
 	endpoint: Joi.string().required(),
