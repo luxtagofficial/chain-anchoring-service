@@ -28,7 +28,7 @@ import { EMPTY } from 'rxjs';
 import { concatMap, expand } from 'rxjs/operators';
 import * as services from './_proto/anchor_grpc_pb';
 import * as messages from './_proto/anchor_pb';
-import useRestSkipper from '../useRestSkipper';
+import { useRestSkipper } from '../useRestSkipper';
 
 export interface IInspectorOptions {
   endpoint: string;
@@ -76,8 +76,6 @@ export class Inspector {
     const pageSize: number = 100;
     let queryParams = new QueryParams(pageSize);
 
-    let anchors: InspectedAnchor[] = []
-
     const lockList = await this.accountHttp.transactions(this.publicAccount, queryParams).pipe(
       expand( (transactions) => {
         queryParams = new QueryParams(pageSize, transactions[transactions.length - 1].transactionInfo!.id);
@@ -106,6 +104,7 @@ export class Inspector {
       )
     ).toPromise();
 
+    let anchors: InspectedAnchor[] = []
     for (var i = 0; i < lockList.length; i++) {
       const block = lockList[i].getBlock()!
       const height = block.getHeight()

@@ -25,7 +25,6 @@
         "Access-Control-Allow-Credentials": "true"
       }
     },
-    { "src": "/(.+)/(.+)", "dest": "now-handler/$1.ts" },
     { "src": "/(.+)/", "dest": "now-handler/$1.ts" },
     { "src": "/(.+)", "dest": "now-handler/$1.ts" }
   ]

@@ -7,11 +7,7 @@ export interface Block {
 	uriList: Array<string>,
 }
 
-export interface IRestSkipper {
-	fetchRest: Promise<Block>
-}
-
-export default (skipperEndpoint: string) => {
+export const useRestSkipper = (skipperEndpoint: string) => {
 	console.log("[INFO] using REST skipper at", skipperEndpoint)
 	return {
 		fetchRest: (blockHeight: number): Promise<Block> => {
@@ -20,3 +16,5 @@ export default (skipperEndpoint: string) => {
 		}
 	}
 }
+
+export default useRestSkipper

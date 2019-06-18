@@ -4,10 +4,11 @@ import { Joi, validate } from './utils/validator'
 const payloadSchema = Joi.object().keys({
 	inspector: {
 	  name: Joi.string().required(),
+	  island: Joi.string().required(),
 	  type: Joi.string().required(),
-	  endpoint: Joi.string().required(),
-	  networkType: Joi.string().required(),
-	  account: Joi.string().required(),
+	  
+	  // inspector.meta definition is per-chain basis.
+	  meta: Joi.object(),
 	},
 	skipper: {
 	  name: Joi.string().required(),
