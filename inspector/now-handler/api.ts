@@ -31,7 +31,10 @@ export default async (req, res) => {
 
 	const handler = require(`./${type.toLowerCase()}`)
 	if (!handler) {
-		return send(res, 400, "invalid inspector type")
+		return send(res, 400, {
+			error: "invalid inspector type",
+			code: "E_INVALID_INSPECTOR_TYPE",
+		})
 	}
 
 	return handler.withPayload(payload)(res)

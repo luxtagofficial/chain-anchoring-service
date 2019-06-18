@@ -1,0 +1,10 @@
+{
+  "bcm": {
+    "endpoint": "https://some-private-chain.com",
+    "type": "NEM2"
+  },
+  "iium": {
+  	"endpoint": "https://another-private-chain.com",
+  	"type": "NEM2"
+  }
+}

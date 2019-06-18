@@ -2,9 +2,6 @@
     "name": "cas-skipper",
     "public": false,
     "version": 2,
-    "env": {
-        "SHIP_ENDPOINT": "@ship_endpoint"
-    },
     "builds": [
         {
             "src": "now-handler/*.ts",
@@ -15,8 +12,6 @@
         }
     ],
     "routes": [
-    	{ "src": "/(.+)/(.+)", "dest": "now-handler/$1.ts" },
-    	{ "src": "/(.+)/", "dest": "now-handler/$1.ts" },
-    	{ "src": "/(.+)", "dest": "now-handler/$1.ts" }
+    	{ "src": "(.*)", "dest": "now-handler/api.ts" }
     ]
 }

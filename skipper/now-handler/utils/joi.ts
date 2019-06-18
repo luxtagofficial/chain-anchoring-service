@@ -8,7 +8,7 @@ const validate = (schema, payload) => {
 
 	return {
 		error: 'invalid payload',
-		code: error.name,
+		code: 'E_VALIDATION_ERROR',
 		details: error.details,
 	}
 }
