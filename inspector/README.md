@@ -25,7 +25,7 @@ curl 'https://cas-inspector.luxtagofficial.now.sh/api/anchors' -d \
 }'
 
 Example 3: POST (with different meta)
-curl 'https://cas-inspector.luxtagofficial.now.sh/api/anchors/api/anchors' -d \
+curl 'https://cas-inspector.luxtagofficial.now.sh/api/anchors' -d \
 '{
   "inspector": {
     "name": "NEM Public Chain",
