@@ -7,10 +7,9 @@ const validate = (schema, payload) => {
 	}
 
 	return {
-		error: {
-			code: error.name,
-			details: error.details,
-		}
+		error: 'invalid payload',
+		code: error.name,
+		details: error.details,
 	}
 }
 

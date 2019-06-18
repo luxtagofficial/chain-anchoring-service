@@ -2,7 +2,7 @@ import { parse } from 'url'
 import { send } from 'micro'
 
 import { Inspector, IInspectorOptions } from '../nem2/inspector'
-import { Joi, validate } from '../joi-utils'
+import { Joi, validate } from './utils/joi'
 
 const fetchAnchorsArgsSchema = Joi.object().keys({
 	endpoint: Joi.string().required(),
@@ -35,7 +35,7 @@ export default async (req, res) => {
 	if (payloadError) {
 		return send(res, 400, payloadError)
 	}
-	
+
 	// TODO: handle height or pagination
 
 	const anchors = await fetchAnchors({ ...(<unknown>query) } as IInspectorOptions);
