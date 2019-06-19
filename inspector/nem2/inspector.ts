@@ -16,6 +16,7 @@
  *
  */
 
+import fetch from 'node-fetch';
 import grpc from 'grpc';
 import {
   AccountHttp,
@@ -69,6 +70,24 @@ export class Inspector {
     } catch (e) {
       console.log(e);
       throw Error('NEM address is not valid');
+    }
+  }
+
+  public static async genesisHash(endpoint: string) {
+    const resp = await fetch(endpoint + '/block/1')
+
+    const json = await resp.json()
+    if (!json.meta) {
+      return {
+        error: 'endpoint returns unexpected response: `.meta` key is missing.',
+        details: [
+          { jsonResponse: json },
+        ]
+      }
+    }
+
+    return {
+      genesisHash: json.meta.hash
     }
   }
 

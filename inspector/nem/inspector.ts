@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import { parse } from 'url';
 import grpc from 'grpc';
 import * as nemSDK from 'nem-sdk';
@@ -50,6 +51,32 @@ export class Inspector {
       this.skipper = useRestSkipper(this.opts.skipper)
     } else {
       this.skipper = new services.InspectClient(this.opts.skipper, grpc.credentials.createInsecure());
+    }
+  }
+
+  public static async genesisHash(endpoint: string) {
+    const resp = await fetch(endpoint + '/block/at/public', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        height: 2
+      })
+    })
+
+    const json = await resp.json()
+    if (!json.prevBlockHash) {
+      return {
+        error: 'endpoint returns unexpected response: `.prevBlockHash` key is missing.',
+        details: [
+          { jsonResponse: json }
+        ]
+      }
+    }
+
+    return {
+      genesisHash: json.prevBlockHash.data
     }
   }
 

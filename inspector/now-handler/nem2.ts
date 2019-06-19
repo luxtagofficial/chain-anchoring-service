@@ -16,8 +16,13 @@ const fetchAnchorsArgsSchema = Joi.object().keys({
 });
 
 const fetchAnchors = async (args: IInspectorOptions) => {
-	const i = new Inspector(args);
-  	return await i.fetchAnchors();
+	const i = new Inspector(args)
+	return await i.fetchAnchors()
+}
+
+export const chainInfo = (endpoint) => async (res) => {  	
+	const genesisHash = await Inspector.genesisHash(endpoint);
+	return send(res, 200, genesisHash);
 }
 
 export const withPayload = ({inspector, skipper}) => async (res) => {
