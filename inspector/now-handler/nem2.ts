@@ -17,7 +17,9 @@ const fetchAnchorsArgsSchema = Joi.object().keys({
 
 const fetchAnchors = async (args: IInspectorOptions) => {
 	const i = new Inspector(args)
-	return await i.fetchAnchors()
+	return {
+		anchors: await i.fetchAnchors()
+	}
 }
 
 export const chainInfo = (endpoint) => async (res) => {  	
@@ -41,5 +43,6 @@ export const withPayload = ({inspector, skipper}) => async (res) => {
 		publicKey: meta.account,
 		networkType: meta.networkType,
 	});
+
 	return send(res, 200, resp);
 }

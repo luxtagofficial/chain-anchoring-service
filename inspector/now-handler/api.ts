@@ -102,9 +102,8 @@ const routes = {
 			})
 		}
 
-		const fetchAnchors = handler.withPayload(payload)
 		try {
-			return await fetchAnchors(res)
+			return await handler.withPayload(payload)(res)
 		} catch (e) {
 			return handleUpstreamError(e, res)
 		}
