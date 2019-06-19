@@ -30,6 +30,15 @@ function hextoUint8Arr(hexx: string): Uint8Array {
   return ua;
 }
 
+const handleUpstreamMissingKey = (key: string, jsonResponse: object) => {
+  return {
+    error: `upstream returns unexpected response: '.${key}' key is missing.`,
+    details: [
+      { jsonResponse },
+    ]
+  }
+}
+
 export class Inspector {
   private opts: IInspectorOptions;
   private island: any;
@@ -54,29 +63,31 @@ export class Inspector {
     }
   }
 
-  public static async genesisHash(endpoint: string) {
-    const resp = await fetch(endpoint + '/block/at/public', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        height: 2
-      })
-    })
+  public static async chainInfo(endpoint: string) {
+    const [ respBlock2, respHeight] = await Promise.all([
+      fetch(endpoint + '/block/at/public', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          height: 2
+        })
+      }).then(resp => resp.json()),
+      fetch(endpoint + '/chain/height').then(resp => resp.json())
+    ])
 
-    const json = await resp.json()
-    if (!json.prevBlockHash) {
-      return {
-        error: 'endpoint returns unexpected response: `.prevBlockHash` key is missing.',
-        details: [
-          { jsonResponse: json }
-        ]
-      }
+    if (!respBlock2.prevBlockHash) {
+      return handleUpstreamMissingKey('prevBlockHash', respBlock2)
+    }
+
+    if (!respHeight.height) {
+      return handleUpstreamMissingKey('height', respHeight)
     }
 
     return {
-      genesisHash: json.prevBlockHash.data
+      genesisHash: respBlock2.prevBlockHash.data,
+      currentBlockHeight: respHeight.height,
     }
   }
 

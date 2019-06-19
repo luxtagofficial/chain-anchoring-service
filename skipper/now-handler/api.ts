@@ -44,7 +44,7 @@ const handleChainInfo = (shipID) => async (req, res) => {
 	}
 
 	try {
-		return await handler.chainInfo(ship)(res)
+		return await handler.chainInfo(ship.endpoint)(res)
 	} catch (e) {
 		const error = `failed to fetch chain info: ${e.message}`
 		console.log(`[ERROR] ${error}\n`, e)

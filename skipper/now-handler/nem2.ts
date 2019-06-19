@@ -6,10 +6,8 @@ import * as messages from '../nem2/_proto/anchor_pb'
 
 import { Ship } from './api'
 
-export const chainInfo = (ship: Ship) => async (res) => {
-	const skipper = new Skipper(ship.endpoint);
-
-	const resp = await skipper.chainInfo()
+export const chainInfo = (endpoint: string) => async (res) => {
+	const resp = await Skipper.chainInfo(endpoint)
 	return send(res, 200, resp)
 }
 

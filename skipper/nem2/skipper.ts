@@ -21,6 +21,15 @@ import { BlockchainHttp, BlockInfo } from 'nem2-sdk';
 import { Observable } from 'rxjs';
 import * as messages from './_proto/anchor_pb';
 
+const handleUpstreamMissingKey = (key: string, jsonResponse: object) => {
+  return {
+    error: `upstream returns unexpected response: '.${key}' key is missing.`,
+    details: [
+      { jsonResponse },
+    ]
+  }
+}
+
 export class Skipper {
   public readonly endpoint: string;
   private blockchainHttp: BlockchainHttp;
@@ -54,32 +63,23 @@ export class Skipper {
     return this.blockchainHttp.getBlockByHeight(height);
   }
 
-  public async chainInfo() {
+  public static async chainInfo(endpoint: string) {
     const [ jsonBlock1, jsonDiagnostic ] = await Promise.all([
-      fetch(this.endpoint + '/block/1').then(resp => resp.json()),
-      fetch(this.endpoint + '/diagnostic/storage').then(resp => resp.json()),
+      fetch(endpoint + '/block/1').then(resp => resp.json()),
+      fetch(endpoint + '/diagnostic/storage').then(resp => resp.json()),
     ])
 
     if (!jsonBlock1.meta) {
-      return this.handleUpstreamMissingKey('meta', jsonBlock1)
+      return handleUpstreamMissingKey('meta', jsonBlock1)
     }
 
     if (!jsonDiagnostic.numBlocks) {
-      return this.handleUpstreamMissingKey('numBlocks', jsonBlock1)
+      return handleUpstreamMissingKey('numBlocks', jsonBlock1)
     }
 
     return {
       genesisHash: jsonBlock1.meta.hash,
       currentBlockHeight: jsonDiagnostic.numBlocks,
-    }
-  }
-
-  private handleUpstreamMissingKey(key: string, jsonResponse: object) {
-    return {
-      error: `upstream returns unexpected response: '.${key}' key is missing.`,
-      details: [
-        { jsonResponse },
-      ]
     }
   }
 }

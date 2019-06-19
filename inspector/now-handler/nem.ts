@@ -22,8 +22,8 @@ const fetchAnchors = async (args: IInspectorOptions) => {
 }
 
 export const chainInfo = (endpoint) => async (res) => {  	
-	const genesisHash = await Inspector.genesisHash(endpoint);
-	return send(res, 200, genesisHash);
+	const chainInfo = await Inspector.chainInfo(endpoint);
+	return send(res, 200, chainInfo);
 }
 
 export const withPayload = ({inspector, skipper}) => async (res) => {

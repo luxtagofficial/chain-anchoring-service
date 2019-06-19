@@ -45,6 +45,15 @@ export type InspectedAnchor = {
   valid: boolean;
 }
 
+const handleUpstreamMissingKey = (key: string, jsonResponse: object) => {
+  return {
+    error: `upstream returns unexpected response: '.${key}' key is missing.`,
+    details: [
+      { jsonResponse },
+    ]
+  }
+}
+
 export class Inspector {
   private opts: IInspectorOptions;
   private skipper: services.InspectClient | any;
@@ -73,21 +82,23 @@ export class Inspector {
     }
   }
 
-  public static async genesisHash(endpoint: string) {
-    const resp = await fetch(endpoint + '/block/1')
+  public static async chainInfo(endpoint: string) {
+    const [ jsonBlock1, jsonDiagnostic ] = await Promise.all([
+      fetch(endpoint + '/block/1').then(resp => resp.json()),
+      fetch(endpoint + '/diagnostic/storage').then(resp => resp.json()),
+    ])
 
-    const json = await resp.json()
-    if (!json.meta) {
-      return {
-        error: 'endpoint returns unexpected response: `.meta` key is missing.',
-        details: [
-          { jsonResponse: json },
-        ]
-      }
+    if (!jsonBlock1.meta) {
+      return handleUpstreamMissingKey('meta', jsonBlock1)
+    }
+
+    if (!jsonDiagnostic.numBlocks) {
+      return handleUpstreamMissingKey('numBlocks', jsonBlock1)
     }
 
     return {
-      genesisHash: json.meta.hash
+      genesisHash: jsonBlock1.meta.hash,
+      currentBlockHeight: jsonDiagnostic.numBlocks,
     }
   }
 
