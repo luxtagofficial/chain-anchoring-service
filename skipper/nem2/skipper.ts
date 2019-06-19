@@ -16,6 +16,7 @@
  *
  */
 
+import fetch from 'node-fetch'
 import { BlockchainHttp, BlockInfo } from 'nem2-sdk';
 import { Observable } from 'rxjs';
 import * as messages from './_proto/anchor_pb';
@@ -56,5 +57,22 @@ export class Skipper {
       throw Error('Type mismatch');
     }
     return this.blockchainHttp.getBlockByHeight(height);
+  }
+
+  public static async genesisHash(endpoint: string) {
+    const resp = await fetch(endpoint + '/block/1')
+    const json = await resp.json()
+    if (!json.meta) {
+      return {
+        error: 'endpoint returns unexpected response: `.meta` key is missing.',
+        details: [
+          { jsonResponse: json },
+        ]
+      }
+    }
+
+    return {
+      genesisHash: json.meta.hash
+    }
   }
 }

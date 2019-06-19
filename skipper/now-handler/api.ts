@@ -16,11 +16,53 @@ const schema = Joi.object().keys({
 	height: Joi.string().regex(/^[1-9][0-9]{0,}$/).required(),
 })
 
-export default async function (req, res) {
+const getHandler = (shipID: string) => {
+	const ship = ships[shipID]
+	if (!ship) {
+		return {
+			error: `ship ID '${shipID}' is invalid.`,
+			code: `E_INVALID_SHIP_ID`
+		}
+	}
+
+	const handlerName = ship.type.toLowerCase()
+	const handler = require(`./${handlerName}`)
+	if (!handler || typeof handler.handle != 'function') {
+		return {
+			error: `missing handler for chain type ${ship.type}.`,
+			code: 'INTERNAL_ERROR',
+		}
+	}
+
+	return { handler, ship }
+}
+
+const handleChainInfo = (shipID) => async (req, res) => {
+	const { error: handlerErr, handler, ship } = getHandler(shipID)
+	if (handlerErr) {
+		return send(res, 400, handlerErr)
+	}
+
+	try {
+		return await handler.chainInfo(ship)(res)
+	} catch (e) {
+		const error = `failed to fetch chain info: ${e.message}`
+		console.log(`[ERROR] ${error}\n`, e)
+		return send(res, 400, {
+			error,
+		})
+	}
+}
+
+export default async (req, res) => {
 	const { pathname, query = {} } = parse(req.url, true)
 	const [ shipID, height ] = pathname.split('/').splice(1)
 
-	const payloadError = validate(schema, { shipID, height})
+	if (pathname.endsWith('/chain/info')) {
+		return handleChainInfo(shipID)(req, res)
+	}
+
+	const payloadError = validate(schema, { shipID, height })
 	if (payloadError) {
 		return send(res, 400, {
 			...payloadError,
@@ -28,25 +70,20 @@ export default async function (req, res) {
 		})
 	}
 
-	const ship = ships[shipID]
-	if (!ship) {
-		return send(res, 400, {
-			error: `ship ID '${shipID}' is invalid.`,
-			code: `E_INVALID_SHIP_ID`
-		})
+	const { error: handlerErr, handler, ship } = getHandler(shipID)
+	if (handlerErr) {
+		return send(res, 400, handlerErr)
 	}
 
-	const { protocol, hostname, port } = parse(ship.endpoint as string)
-	
-	const handlerName = ship.type.toLowerCase()
-	const handler = require(`./${handlerName}`)
-	if (!handler || typeof handler.handle != 'function') {
-		console.log("[ERROR] handler missing:", handlerName)
+	try {
+		const { protocol, hostname, port } = parse(ship.endpoint as string)
+		return await handler.handle(ship, Number.parseInt(height))(req, res)
+	} catch (e) {
+		const msg = 'failed to fetch blocks from ship endpoint. is the ship endpoint online?'
+		console.log(`[ERROR] ${msg}:`, e)
 		return send(res, 500, {
-			error: `missing handler for chain type ${ship.type}.`,
-			code: 'INTERNAL_ERROR',
+			error: msg,
+			code: "E_UPSTREAM_ERROR"
 		})
 	}
-
-	return handler.handle(ship, Number.parseInt(height))(req, res)
 }

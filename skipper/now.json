@@ -12,6 +12,18 @@
         }
     ],
     "routes": [
-    	{ "src": "(.*)", "dest": "now-handler/api.ts" }
+    	{ 
+            "src": "(.*)",
+            "dest": "now-handler/api.ts",
+            "methods": [
+              "GET",
+              "OPTIONS"
+            ],
+            "headers": {
+              "Access-Control-Allow-Origin": "*",
+              "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
+              "Access-Control-Allow-Credentials": "true"
+            }
+        }
     ]
 }
