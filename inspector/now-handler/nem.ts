@@ -27,25 +27,12 @@ export const withPayload = ({inspector, skipper}) => async (res) => {
 		return send(res, 400, metaError)
 	}
 
-	const anchors = await fetchAnchors({
-		endpoint: inspector.island,
+	const resp = await fetchAnchors({
+		island: inspector.island,
 		skipper: skipper.endpoint,
 
 		// meta args
 		address: meta.address,
 	});
-	return send(res, 200, { anchors });
+	return send(res, 200, resp);
 }
-
-export default async (req, res) => {
-	const { pathname, query = {} } = parse(req.url, true)
-	const [ handlerName, height ] = pathname.split('/').splice(1)
-
-	const payloadError = validate(fetchAnchorsArgsSchema, query)
-	if (payloadError) {
-		return send(res, 400, payloadError)
-	}
-
-  	const anchors = await fetchAnchors({ ...(<unknown>query) } as IInspectorOptions);
-  	return send(res, 200, { anchors });
-};

@@ -2,9 +2,6 @@ CAS Inspector can be used as grpc or rest. If `skipper` param passed without `ht
 
 staging example:
 
-Example 1: GET
-https://cas-inspector.luxtagofficial.now.sh/nem2?island=https://api.iium.luxtag.io&account=397A6BF3CA20A37DAA4A53C7BD0FFD3AE3824F1F2F956255543C8C15B141840D&networkType=MIJIN_TEST&skipper=https://cas-skipper.luxtagofficial.now.sh/bcm
-
 Example 2: POST
 curl 'https://cas-inspector.luxtagofficial.now.sh/api/anchors' -d \
 '{
@@ -41,3 +38,14 @@ curl 'https://cas-inspector.luxtagofficial.now.sh/api/anchors' -d \
     "endpoint": "https://cas-skipper.luxtagofficial.now.sh/bcm"
   }
 }'
+
+
+Chain info example:
+
+curl -XPOST localhost:3000/api/chain/info -d '{"type":"nem2","endpoint":"https://api.iium.luxtag.io"}'
+
+Each POST has GET equivalent in same path. Pass the json as `payload` param, ie.
+
+```
+http://localhost:3000/api/chain/info?payload={"type":"nem","endpoint":"http://bigalice2.nem.ninja:7890"}
+```

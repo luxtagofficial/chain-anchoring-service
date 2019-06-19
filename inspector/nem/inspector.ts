@@ -93,12 +93,6 @@ export class Inspector {
       }
 
       return anchors
-    } catch (e) {
-      console.log("[ERROR] 'fetchAnchors' failed:", e)
-      return {
-        error: 'failed to fetch anchors. see server log.'
-      }
-    }
   }
 
   private async verifyLock(lock: messages.Lock): Promise<boolean> {

@@ -13,9 +13,10 @@
   ],
   "routes": [
     {
-      "src": "/api/anchors",
+      "src": "(\/api\/anchors|\/api\/chain\/info)",
       "dest": "now-handler/api.ts",
       "methods": [
+        "GET",
         "POST",
         "OPTIONS"
       ],
@@ -24,8 +25,6 @@
         "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
         "Access-Control-Allow-Credentials": "true"
       }
-    },
-    { "src": "/(.+)/", "dest": "now-handler/$1.ts" },
-    { "src": "/(.+)", "dest": "now-handler/$1.ts" }
+    }
   ]
 }
