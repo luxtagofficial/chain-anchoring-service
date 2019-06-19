@@ -7,7 +7,13 @@ import * as messages from '../nem2/_proto/anchor_pb'
 import { Ship } from './api'
 
 export const chainInfo = (ship) => async (res) => {
-	const resp = await Skipper.genesisHash(ship.endpoint)
+	const { protocol, hostname, port } = parse(ship.endpoint as string)
+	const skipper = new Skipper({
+		endpoint: protocol + '//' + hostname,
+		port,
+	});
+
+	const resp = await skipper.chainInfo()
 	return send(res, 200, resp)
 }
 
