@@ -21,17 +21,13 @@ import { BlockchainHttp, BlockInfo } from 'nem2-sdk';
 import { Observable } from 'rxjs';
 import * as messages from './_proto/anchor_pb';
 
-export interface ISkipperOptions {
-  endpoint: string;
-}
-
 export class Skipper {
-  public readonly opts: ISkipperOptions;
+  public readonly endpoint: string;
   private blockchainHttp: BlockchainHttp;
 
-  public constructor(opts: ISkipperOptions) {
-    this.opts = opts;
-    this.blockchainHttp = new BlockchainHttp(this.opts.endpoint);
+  public constructor(endpoint: string) {
+    this.endpoint = endpoint;
+    this.blockchainHttp = new BlockchainHttp(this.endpoint);
   }
 
   public block(call, callback) {
@@ -60,8 +56,8 @@ export class Skipper {
 
   public async chainInfo() {
     const [ jsonBlock1, jsonDiagnostic ] = await Promise.all([
-      fetch(endpoint + '/block/1').then(resp => resp.json()),
-      fetch(endpoint + '/diagnostic/storage').then(resp => resp.json()),
+      fetch(this.endpoint + '/block/1').then(resp => resp.json()),
+      fetch(this.endpoint + '/diagnostic/storage').then(resp => resp.json()),
     ])
 
     if (!jsonBlock1.meta) {

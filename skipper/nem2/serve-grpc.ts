@@ -19,9 +19,9 @@
 import yargs from 'yargs';
 import grpc from 'grpc';
 import * as services from './_proto/anchor_grpc_pb';
-import { Skipper, ISkipperOptions } from './skipper'
+import { Skipper } from './skipper'
 
-function parseArguments(): ISkipperOptions {
+function parseArguments(): any {
   const args = yargs
     .help('help').alias('help', 'h')
     .env('SKIPPER_NEM2')
@@ -42,22 +42,22 @@ function parseArguments(): ISkipperOptions {
   };
 }
 
-function startServer(skipper: Skipper) {
+function startServer(skipper: Skipper, grpcPort: string) {
   const server = new grpc.Server();
-  server.addService(services.InspectService, {block: skipper.block.bind(skipper)});
-  const port = server.bind(`0.0.0.0${skipper.opts.port}`, grpc.ServerCredentials.createInsecure());
+  server.addService(services.InspectService, { block: skipper.block.bind(skipper) });
+  const port = server.bind(`0.0.0.0${grpcPort}`, grpc.ServerCredentials.createInsecure());
   if (port === 0) {
-    console.error(`Failed to bind to ${skipper.opts.port}`);
+    console.error(`Failed to bind to ${grpcPort}`);
     process.exit(1);
   }
   server.start();
-  console.log(`Island listening on ${port}`);
+  console.log(`Island listening on ${grpcPort}`);
 }
 
 function main() {
   const opts = parseArguments();
-  const skipper = new Skipper(opts);
-  startServer(skipper);
+  const skipper = new Skipper(opts.endpoint);
+  startServer(skipper, opts.port);
 }
 
 main();
