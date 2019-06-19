@@ -51,7 +51,7 @@ function parseArguments(): IInspectorOptions {
     .argv;
 
   return {
-    endpoint: args.endpoint,
+    island: args.endpoint,
     networkType: args.networkType,
     publicKey: args.publicKey,
 

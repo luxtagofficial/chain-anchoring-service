@@ -8,7 +8,7 @@ import { useRestSkipper } from '../useRestSkipper';
 const nem = nemSDK.default;
 
 export interface IInspectorOptions {
-  endpoint: string;
+  island: string;
   skipper: string;
 
   address: string;
@@ -31,19 +31,19 @@ function hextoUint8Arr(hexx: string): Uint8Array {
 
 export class Inspector {
   private opts: IInspectorOptions;
-  private endpoint: any;
+  private island: any;
   private skipper: services.InspectClient | any;
   private useRestSkipper: boolean;
 
   public constructor(opts: IInspectorOptions) {
     this.opts = opts;
 
-    let { protocol, hostname, port } = parse(this.opts.endpoint as string)
+    let { protocol, hostname, port } = parse(this.opts.island as string)
     if (!hostname) {
-      throw new Error(`invalid endpoint`);
+      throw new Error(`invalid island`);
     }
 
-    this.endpoint = nem.model.objects.create('endpoint')(protocol + '//' + hostname, port);
+    this.island = nem.model.objects.create('endpoint')(protocol + '//' + hostname, port);
     
     this.useRestSkipper = this.opts.skipper.startsWith('http')
     if (this.useRestSkipper) {
@@ -54,8 +54,7 @@ export class Inspector {
   }
 
   public async fetchAnchors() {
-    try {
-      const txs = await nem.com.requests.account.transactions.all(this.endpoint, this.opts.address)
+      const txs = await nem.com.requests.account.transactions.all(this.island, this.opts.address)
       if (!txs.data) {
         throw new Error('unexpected response from endpoint:' + JSON.stringify(txs));
       }

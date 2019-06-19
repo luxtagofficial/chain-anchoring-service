@@ -53,7 +53,7 @@ function parseArguments() {
   }
   return {
     address: args.address,
-    endpoint: args.endpointHost + ':' + args.endpointPort,
+    island: args.endpointHost + ':' + args.endpointPort,
     skipper: args.skipper,
   };
 }

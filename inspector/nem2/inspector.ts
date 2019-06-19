@@ -31,7 +31,7 @@ import * as messages from './_proto/anchor_pb';
 import { useRestSkipper } from '../useRestSkipper';
 
 export interface IInspectorOptions {
-  endpoint: string;
+  island: string;
   skipper: string;
 
   publicKey: string;
@@ -61,7 +61,7 @@ export class Inspector {
       this.skipper = new services.InspectClient(this.opts.skipper, grpc.credentials.createInsecure());
     }
 
-    this.accountHttp = new AccountHttp(this.opts.endpoint);
+    this.accountHttp = new AccountHttp(this.opts.island);
 
     try {
       const networkType = getNetwork(this.opts.networkType);
