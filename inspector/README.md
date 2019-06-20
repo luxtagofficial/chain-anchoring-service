@@ -1,10 +1,14 @@
 CAS Inspector can be used as grpc or rest. If `skipper` param passed without `http` or `https` prefix, it's considered as grpc endpoint and the inspector will use grpc skipper.
 
+offset can be transaction id, transaction hash, etc. (based on blockchain implementation). it'll be translated to the corresponding params inside inspector class.
+
 staging example:
 
 Example 2: POST
+
 curl 'https://cas-inspector.luxtagofficial.now.sh/api/anchors' -d \
 '{
+  "offset": "1",
   "inspector": {
     "name": "IIUM Private Chain",
     "type": "NEM2",
@@ -24,6 +28,7 @@ curl 'https://cas-inspector.luxtagofficial.now.sh/api/anchors' -d \
 Example 3: POST (with different meta)
 curl 'https://cas-inspector.luxtagofficial.now.sh/api/anchors' -d \
 '{
+  "offset": "1",
   "inspector": {
     "name": "NEM Public Chain",
     "type": "NEM",

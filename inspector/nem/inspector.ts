@@ -6,6 +6,7 @@ import * as services from './_proto/anchor_grpc_pb';
 import * as messages from './_proto/anchor_pb';
 import { useRestSkipper } from '../useRestSkipper';
 import { InspectorContract, InspectedAnchor, ErrorObject, PAGE_SIZE } from '../types';
+import { sortAnchors } from '../utils'
 
 const nem = nemSDK.default;
 
@@ -84,45 +85,76 @@ export class Inspector {
     }
   }
 
-  public async fetchAnchors() {
-      const txs = await nem.com.requests.account.transactions.all(this.island, this.opts.address)
-      if (!txs.data) {
-        throw new Error('unexpected response from endpoint:' + JSON.stringify(txs));
+  public async fetchAnchors(offset?: string): Promise<InspectedAnchor[] | ErrorObject> {
+      let anchors: InspectedAnchor[] = []
+      let iter = 0
+
+      if (offset && !this.reUint.test(offset)) {
+        return {
+          error: 'offset must be integer greater than 0',
+          code: 'E_INVALID_ANCHOR_OFFSET'
+        }
       }
 
-      let lockList: messages.Lock[] = []
-      await Promise.all(txs.data.map((tx) => {
-        const messageObj = tx.transaction.message;
-        if (messageObj && messageObj.payload) {
-          try {
-            const anchor = messages.Anchor.deserializeBinary(hextoUint8Arr(messageObj.payload));
-            // Ignore anchor with no locks
-            if (anchor.getLocksList().length !== 0) {
-              lockList = lockList.concat(anchor.getLocksList());
+      let lastTxID = Number.parseInt(offset)
+      while (anchors.length < PAGE_SIZE) {
+        const resp = await nem.com.requests.account.transactions.all(this.island, this.args.address, null, lastTxID)
+        if (!resp.data) {
+          throw new Error('unexpected response from endpoint:' + JSON.stringify(resp));
+        }
+
+        // break the loop if there's no more data from upstream
+        if (!resp.data.length) {
+          console.log("[INFO] `fetchTxs` completed: no more data from upstream")
+          break
+        }
+
+        // map offset id and lock list. for nem 1,
+        // `meta.id` is used as offset id.
+        let lockList: { [key: string]: messages.Lock[] } = {}
+
+        resp.data.forEach((tx) => {
+          const messageObj = tx.transaction.message;
+          if (messageObj && messageObj.payload) {
+            try {
+              const anchor = messages.Anchor.deserializeBinary(hextoUint8Arr(messageObj.payload));
+              // Ignore anchor with no locks
+              if (anchor.getLocksList().length !== 0) {
+                lockList[tx.meta.id] = anchor.getLocksList();
+              }
+            } catch (e) { /* Ignore messages that cannot be parsed */ }
+          }
+        });
+
+        let anchorsFound: InspectedAnchor[] = []
+        for (const offsetID in lockList) {
+          for (const lock of lockList[offsetID]) {
+            const jsonLock = JSON.stringify(lock.toObject())
+
+            const block = lock.getBlock()!
+            const height = block.getHeight()
+            if (height) {
+              const valid = await this.verifyLock(lock);
+              anchorsFound.push({
+                hash: block.getHash(),
+                height,
+                offsetID,
+                valid,
+              })
+            } else {
+              console.log("[WARN] lock with no height won't be considered as anchor. lock:", JSON.stringify(lock.toObject()))
             }
-          } catch (e) {
-            // Ignore messages that cannot be parsed
           }
         }
-      }));
 
-      let anchors: InspectedAnchor[] = []
-      const locks = lockList.filter((lock) => lock.getBlock()!.getHeight() !== '');
-      
-      for (const lock of locks) {
-        const block = lock.getBlock()!
-        const height = block.getHeight()
-        if (height) {
-          const valid = await this.verifyLock(lock);
-          anchors.push({
-            height,
-            hash: block.getHash(),
-            valid
-          })
-        }
+        lastTxID = resp.data[resp.data.length - 1].meta.id
+        iter++
+
+        anchors = [...anchors, ...anchorsFound]
+        console.log(`[INFO] found ${anchorsFound.length} anchor(s) in iter #${iter}. total anchors: ${anchors.length}`)
       }
 
-      return anchors
+      return sortAnchors(anchors)
   }
 
   private async verifyLock(lock: messages.Lock): Promise<boolean> {
@@ -140,7 +172,7 @@ export class Inspector {
         console.log("[WARN] HEIGHT NOT SAME", {ship, island})
         return false
       } catch (e) {
-        console.log("fetchRest error:", e)
+        console.log("[ERROR] `verifyLock` failed:", e)
         return false
       }
     }

@@ -8,11 +8,12 @@ const chainInfoSchema = Joi.object().keys({
 })
 
 const anchorsSchema = Joi.object().keys({
+	offset: Joi.string().allow('', null),
 	inspector: {
 	  name: Joi.string().required(),
 	  island: Joi.string().uri().required(),
 	  type: Joi.string().required(),
-	  
+
 	  // inspector.meta definition is per-chain basis.
 	  meta: Joi.object(),
 	},

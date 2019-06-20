@@ -14,4 +14,5 @@ export type InspectedAnchor = {
   height: string;
   hash: string;
   valid: boolean;
+  offsetID: string;
 }
