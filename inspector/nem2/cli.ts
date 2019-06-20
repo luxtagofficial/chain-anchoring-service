@@ -17,9 +17,10 @@
  */
 
 import yargs from 'yargs';
-import { Inspector, IInspectorOptions } from './inspector';
+import { Inspector, InspectorArgs } from './inspector';
+import { InspectedAnchor } from '../types';
 
-function parseArguments(): IInspectorOptions {
+function parseArguments(): InspectorArgs {
   const args = yargs
     .help('help').alias('help', 'h')
     .env('INSPECTOR_NEM2')
@@ -61,9 +62,9 @@ function parseArguments(): IInspectorOptions {
 }
 
 async function main() {
-  const inspector = new Inspector(parseArguments() as IInspectorOptions);
+  const inspector = new Inspector(parseArguments() as InspectorArgs);
   const anchors = await inspector.fetchAnchors();
-  anchors.forEach(anchor => {
+  (anchors as InspectedAnchor[]).forEach(anchor => {
     console.log(`Height ${anchor.height}: ${anchor.valid ? 'Verified' : 'Invalid'}`);
   })
 }

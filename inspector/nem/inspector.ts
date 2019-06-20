@@ -5,20 +5,12 @@ import * as nemSDK from 'nem-sdk';
 import * as services from './_proto/anchor_grpc_pb';
 import * as messages from './_proto/anchor_pb';
 import { useRestSkipper } from '../useRestSkipper';
+import { InspectorContract, InspectedAnchor, ErrorObject, PAGE_SIZE } from '../types';
 
 const nem = nemSDK.default;
 
-export interface IInspectorOptions {
-  island: string;
-  skipper: string;
-
-  address: string;
-}
-
-export type InspectedAnchor = {
-  height: string;
-  hash: string;
-  valid: boolean;
+export type InspectorArgs = InspectorContract & {
+  address: string
 }
 
 function hextoUint8Arr(hexx: string): Uint8Array {
@@ -40,26 +32,27 @@ const handleUpstreamMissingKey = (key: string, jsonResponse: object) => {
 }
 
 export class Inspector {
-  private opts: IInspectorOptions;
+  private args: InspectorArgs;
   private island: any;
   private skipper: services.InspectClient | any;
   private useRestSkipper: boolean;
+  private reUint = /^[1-9][0-9]{0,}$/
 
-  public constructor(opts: IInspectorOptions) {
-    this.opts = opts;
+  public constructor(args: InspectorArgs) {
+    this.args = args;
 
-    let { protocol, hostname, port } = parse(this.opts.island as string)
+    let { protocol, hostname, port } = parse(this.args.island as string)
     if (!hostname) {
       throw new Error(`invalid island`);
     }
 
     this.island = nem.model.objects.create('endpoint')(protocol + '//' + hostname, port);
     
-    this.useRestSkipper = this.opts.skipper.startsWith('http')
+    this.useRestSkipper = this.args.skipper.startsWith('http')
     if (this.useRestSkipper) {
-      this.skipper = useRestSkipper(this.opts.skipper)
+      this.skipper = useRestSkipper(this.args.skipper)
     } else {
-      this.skipper = new services.InspectClient(this.opts.skipper, grpc.credentials.createInsecure());
+      this.skipper = new services.InspectClient(this.args.skipper, grpc.credentials.createInsecure());
     }
   }
 

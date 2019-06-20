@@ -18,7 +18,7 @@
 
 import * as nemSDK from 'nem-sdk';
 import yargs from 'yargs';
-import { Inspector, IInspectorOptions } from './inspector'
+import { Inspector, InspectorArgs } from './inspector'
 
 const nem = nemSDK.default;
 
@@ -59,7 +59,7 @@ function parseArguments() {
 }
 
 function main() {
-  const inspector = new Inspector(parseArguments() as IInspectorOptions);
+  const inspector = new Inspector(parseArguments() as InspectorArgs);
   inspector.fetchAnchors();
 }
 

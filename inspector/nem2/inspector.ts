@@ -30,19 +30,11 @@ import { concatMap, expand } from 'rxjs/operators';
 import * as services from './_proto/anchor_grpc_pb';
 import * as messages from './_proto/anchor_pb';
 import { useRestSkipper } from '../useRestSkipper';
+import { InspectorContract, InspectedAnchor, ErrorObject } from '../types';
 
-export interface IInspectorOptions {
-  island: string;
-  skipper: string;
-
+export type InspectorArgs = InspectorContract & {
   publicKey: string;
   networkType: string;
-}
-
-export type InspectedAnchor = {
-  height: string;
-  hash: string;
-  valid: boolean;
 }
 
 const handleUpstreamMissingKey = (key: string, jsonResponse: object) => {
@@ -55,27 +47,27 @@ const handleUpstreamMissingKey = (key: string, jsonResponse: object) => {
 }
 
 export class Inspector {
-  private opts: IInspectorOptions;
+  private args: InspectorArgs;
   private skipper: services.InspectClient | any;
   private accountHttp: AccountHttp;
   private publicAccount: PublicAccount;
   private useRestSkipper: boolean;
 
-  public constructor(opts: IInspectorOptions) {
-    this.opts = opts;
+  public constructor(args: InspectorArgs) {
+    this.args = args;
 
-    this.useRestSkipper = this.opts.skipper.startsWith('http')
+    this.useRestSkipper = this.args.skipper.startsWith('http')
     if (this.useRestSkipper) {
-      this.skipper = useRestSkipper(this.opts.skipper)
+      this.skipper = useRestSkipper(this.args.skipper)
     } else {
-      this.skipper = new services.InspectClient(this.opts.skipper, grpc.credentials.createInsecure());
+      this.skipper = new services.InspectClient(this.args.skipper, grpc.credentials.createInsecure());
     }
 
-    this.accountHttp = new AccountHttp(this.opts.island);
+    this.accountHttp = new AccountHttp(this.args.island);
 
     try {
-      const networkType = getNetwork(this.opts.networkType);
-      this.publicAccount = PublicAccount.createFromPublicKey(this.opts.publicKey, networkType);
+      const networkType = getNetwork(this.args.networkType);
+      this.publicAccount = PublicAccount.createFromPublicKey(this.args.publicKey, networkType);
     } catch (e) {
       console.log(e);
       throw Error('NEM address is not valid');
@@ -166,7 +158,7 @@ export class Inspector {
         console.log("[WARN] HEIGHT NOT SAME", {ship, island})
         return false
       } catch (e) {
-        console.log("fetchRest error:", e)
+        console.log("[ERROR] `verifyLock` failed:", e)
         return false
       }
     }

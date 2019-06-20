@@ -1,8 +1,9 @@
 import { parse } from 'url'
 import { send } from 'micro'
 
-import { Inspector, IInspectorOptions } from '../nem2/inspector'
+import { Inspector, InspectorArgs } from '../nem2/inspector'
 import { Joi, validate, getMetaError } from './utils/validator'
+import { ErrorObject } from '../types'
 
 const metaSchema = {
 	networkType: Joi.string().required(),
@@ -15,11 +16,14 @@ const fetchAnchorsArgsSchema = Joi.object().keys({
 	...metaSchema,
 });
 
-const fetchAnchors = async (args: IInspectorOptions) => {
+const fetchAnchors = async (args: InspectorArgs) => {
 	const i = new Inspector(args)
-	return {
-		anchors: await i.fetchAnchors()
+	const resp = await i.fetchAnchors()
+	if ((resp as ErrorObject).error) {
+		return resp
 	}
+
+	return { anchors: resp }
 }
 
 export const chainInfo = (endpoint) => async (res) => {  	
