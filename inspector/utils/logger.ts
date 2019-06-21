@@ -4,7 +4,7 @@ const NOW_DEV = NOW_REGION == 'dev1'
 const log = (level: string, msg: string, obj?: object) => {
 	// log everything in dev environment
 	if (NOW_DEV || (level == 'FATAL' || level == 'ERROR')) {
-		obj ? console.log(`[${level}] ${msg}`) : console.log(`[${level}] ${msg}`, obj)
+		obj ? console.log(`[${level}] ${msg}`, obj) : console.log(`[${level}] ${msg}`)
 	}
 }
 
