@@ -30,7 +30,8 @@ import { concatMap, expand } from 'rxjs/operators';
 import * as services from './_proto/anchor_grpc_pb';
 import * as messages from './_proto/anchor_pb';
 import { useRestSkipper } from '../useRestSkipper';
-import { InspectorContract, InspectedAnchor, ErrorObject } from '../types';
+import { InspectorContract, InspectedAnchor, ErrorObject, PAGE_SIZE } from '../types';
+import { sortAnchors } from '../utils'
 
 export type InspectorArgs = InspectorContract & {
   publicKey: string;
@@ -52,6 +53,10 @@ export class Inspector {
   private accountHttp: AccountHttp;
   private publicAccount: PublicAccount;
   private useRestSkipper: boolean;
+
+  // offset id is 24 chars of mongo's object id.
+  // example: 5CCC11E08C73D400016CA264
+  private reOffsetID = /^[A-Z0-9]{24}$/
 
   public constructor(args: InspectorArgs) {
     this.args = args;
@@ -94,50 +99,72 @@ export class Inspector {
     }
   }
 
-  public async fetchAnchors() {
+  public async fetchAnchors(offset?: string) {
     const pageSize: number = 100;
-    let queryParams = new QueryParams(pageSize);
 
-    const lockList = await this.accountHttp.transactions(this.publicAccount, queryParams).pipe(
-      expand( (transactions) => {
-        queryParams = new QueryParams(pageSize, transactions[transactions.length - 1].transactionInfo!.id);
-        return transactions.length >= pageSize
-          ? this.accountHttp.transactions(this.publicAccount, queryParams)
-          : EMPTY;
-      }),
-      concatMap(
-        async (txs) => {
-          let lockList: messages.Lock[] = [];
-          await Promise.all(txs.map((tx) => {
-            if (tx instanceof TransferTransaction) {
-              try {
-                const anchor = messages.Anchor.deserializeBinary(str2arr(tx.message.payload));
-                // Ignore anchor with no locks
-                if (anchor.getLocksList().length !== 0) {
-                  lockList = lockList.concat(anchor.getLocksList());
-                }
-              } catch (e) {
-                // console.log(e);
-              }
-            }
-          }));
-          return lockList;
-        },
-      )
-    ).toPromise();
-
-    let anchors: InspectedAnchor[] = []
-    for (var i = 0; i < lockList.length; i++) {
-      const block = lockList[i].getBlock()!
-      const height = block.getHeight()
-      if (height) {
-        const valid = await this.verifyLock(lockList[i])
-        anchors.push({
-          height,
-          hash: block.getHash(),
-          valid
-        })
+    offset = offset ? offset.toUpperCase() : undefined
+    if (offset && !this.reOffsetID.test(offset)) {
+      return {
+        error: "NEM2 offset must be 24 chars long of mongo's object ID.",
+        code: 'E_INVALID_ANCHOR_OFFSET'
       }
+    }
+
+    let iter = 0
+    let lastTxID = offset
+    let anchors: InspectedAnchor[] = []
+    while (anchors.length < PAGE_SIZE) {
+      const queryParams = new QueryParams(pageSize, lastTxID);
+      const txs = await this.accountHttp.transactions(this.publicAccount, queryParams).toPromise();
+      
+      // break the loop if there's no more data from upstream
+      if (!txs.length) {
+        console.log("[INFO] `fetchAnchors` completed: no more data from upstream")
+        break
+      }
+
+      let lockList: { [key: string]: messages.Lock[] } = {}
+      for (const tx of txs) {
+        if (tx instanceof TransferTransaction) {
+          try {
+            const anchor = messages.Anchor.deserializeBinary(str2arr(tx.message.payload));
+            // Ignore anchor with no locks
+            if (anchor.getLocksList().length !== 0) {
+              lockList[tx.transactionInfo.id] = anchor.getLocksList();
+            }
+          } catch (e) {
+            console.log(
+              `[ERROR] 'messages.Anchor.deserializeBinary' failed: ${e.message}. tx:\n`, 
+              JSON.stringify(tx),
+            )
+          }
+        }
+      }
+
+      let anchorsFound: InspectedAnchor[] = []
+      for (const offsetID in lockList) {
+        for (const lock of lockList[offsetID]) {
+          const block = lock.getBlock()!
+          const height = block.getHeight()
+          if (height) {
+            const valid = await this.verifyLock(lock)
+            anchorsFound.push({
+              hash: block.getHash(),
+              height,
+              offsetID,
+              valid,
+            })
+          } else {
+            console.log("[WARN] lock with no height won't be considered as anchor. lock:", JSON.stringify(lock.toObject()))
+          }
+        }
+      }
+
+      lastTxID = txs[txs.length - 1].transactionInfo.id
+      iter++
+
+      anchors = [...anchors, ...anchorsFound]
+      console.log(`[INFO] found ${anchorsFound.length} anchor(s) across ${txs.length} txs in iter #${iter}. total anchors: ${anchors.length}`)
     }
 
     return anchors;

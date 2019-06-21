@@ -16,9 +16,9 @@ const fetchAnchorsArgsSchema = Joi.object().keys({
 	...metaSchema,
 });
 
-const fetchAnchors = async (args: InspectorArgs) => {
+const fetchAnchors = async (args: InspectorArgs, offset: string) => {
 	const i = new Inspector(args)
-	const resp = await i.fetchAnchors()
+	const resp = await i.fetchAnchors(offset)
 	if ((resp as ErrorObject).error) {
 		return resp
 	}
@@ -31,7 +31,7 @@ export const chainInfo = (endpoint) => async (res) => {
 	return send(res, 200, chainInfo);
 }
 
-export const withPayload = ({inspector, skipper}) => async (res) => {
+export const withPayload = ({offset, inspector, skipper}) => async (res) => {
 	const { meta } = inspector
 
 	const metaError = getMetaError(metaSchema, inspector)
@@ -46,7 +46,7 @@ export const withPayload = ({inspector, skipper}) => async (res) => {
 		// meta args
 		publicKey: meta.account,
 		networkType: meta.networkType,
-	});
+	}, offset);
 
 	return send(res, 200, resp);
 }
