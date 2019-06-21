@@ -24,7 +24,7 @@ proto-web:
 
 proto-island-nem:
 	@echo "*****Island nem package*****"
-	@cd ${PWD}/island/nem/ && \
+	@cd ${PWD}/anchor/island/nem/ && \
 	yarn run proto
 
 proto-inspector-nem:
@@ -55,7 +55,7 @@ install-go-mod:
 
 install-island-nem:
 	@echo "*****Island nem package*****"
-	@cd ${PWD}/island/nem/ && \
+	@cd ${PWD}/anchor/island/nem/ && \
 	yarn install
 
 install-inspector-nem:
@@ -77,7 +77,7 @@ island: island-${type}
 # usage: make run ship type=<ship endpoint type>
 # example: make run ship type=nem2
 ship:
-	@go run ship/${type}/main.go
+	@go run anchor/ship/${type}/main.go
 
 # Run inspector service
 # usage: make run ship type=<inspector endpoint type>
@@ -91,12 +91,12 @@ skipper: skipper-${type}
 
 island-nem:
 	@echo "*****Running Island nem package*****"
-	@cd ${PWD}/island/nem/ && \
+	@cd ${PWD}/anchor/island/nem/ && \
 	yarn run dev
 
 island-nem2:
 	@echo "*****Running Island nem2 package*****"
-	@go run ${PWD}/island/nem2/main.go
+	@go run ${PWD}/anchor/island/nem2/main.go
 
 inspector-nem:
 	@echo "*****Running Inspector nem package*****"

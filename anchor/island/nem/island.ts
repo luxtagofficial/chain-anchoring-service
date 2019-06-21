@@ -1,8 +1,7 @@
 import fetch from 'node-fetch';
 import { parse } from 'url';
 import * as nemSDK from 'nem-sdk';
-import * as services from '../_proto/anchor_grpc_pb';
-import * as messages from '../_proto/anchor_pb';
+import * as messages from '../../_proto/anchor_pb';
 
 const nem = nemSDK.default;
 
@@ -22,7 +21,7 @@ export class Island {
 
     const { protocol, hostname, port } = parse(this.args.endpoint)
     this.hostname = protocol + '//' + hostname
-    this.port = port
+    this.port = port || (protocol == 'http:' ? '80' : '443')
   }
 
   public location(call, callback) {

@@ -18,10 +18,10 @@
 
 import grpc from 'grpc';
 import yargs from 'yargs';
-import * as services from './anchor/anchor_grpc_pb';
+import * as services from '../../_proto/anchor_grpc_pb';
 import { Island, IIslandArgs } from './island';
 
-const parseArguments = (): IIslandArgs => {
+const parseArguments = (): {islandArgs: IIslandArgs, port: string} => {
   const args = yargs
     .help('help').alias('help', 'h')
     .env('ISLAND_NEM')
@@ -61,22 +61,22 @@ const parseArguments = (): IIslandArgs => {
   };
 }
 
-const startServer = (port: string) => {
+const startServer = (island: Island, grpcPort: string) => {
   const server = new grpc.Server();
   server.addService(services.AnnounceService, {location: island.location.bind(island)});
-  const port = server.bind(`0.0.0.0${port}`, grpc.ServerCredentials.createInsecure());
-  if (port === 0) {
-    console.error(`Failed to bind to ${port}`);
+  const port = server.bind(`0.0.0.0${grpcPort}`, grpc.ServerCredentials.createInsecure());
+  if (!port) {
+    console.error(`Failed to bind to ${grpcPort}`);
     process.exit(1);
   }
   server.start();
-  console.log(`Island listening on ${port}`);
+  console.log(`Island listening on ${grpcPort}`);
 }
 
 function main() {
   const { islandArgs, port } = parseArguments()
   const island = new Island(islandArgs)
-  startServer(port);
+  startServer(island, port);
 }
 
 main();
