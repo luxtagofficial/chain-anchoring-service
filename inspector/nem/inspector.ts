@@ -135,7 +135,9 @@ export class Inspector {
         let anchorsFound: InspectedAnchor[] = []
         for (const { offsetID, txHash, lockList } of locks) {
           for (const lock of lockList) {
-            const jsonLock = JSON.stringify(lock.toObject())
+            if ((anchors.length + anchorsFound.length) >= PAGE_SIZE) {
+              break
+            }
 
             const block = lock.getBlock()!
             const height = block.getHeight()

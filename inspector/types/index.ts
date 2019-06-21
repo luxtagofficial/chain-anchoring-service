@@ -1,6 +1,6 @@
 import * as messages from '../_proto/anchor_pb';
 
-export const PAGE_SIZE: number = 10;
+export const PAGE_SIZE: number = 5;
 
 export type ErrorObject = {
 	error: string
