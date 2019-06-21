@@ -1,5 +1,7 @@
+import logger from './logger'
 import sortAnchors from './sortAnchors'
 
 export {
-	sortAnchors
+	logger,
+	sortAnchors,
 }

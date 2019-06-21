@@ -31,7 +31,7 @@ import * as services from '../_proto/anchor_grpc_pb';
 import * as messages from '../_proto/anchor_pb';
 import { useRestSkipper } from '../useRestSkipper';
 import { InspectorContract, InspectorLock, InspectedAnchor, ErrorObject, PAGE_SIZE } from '../types';
-import { sortAnchors } from '../utils'
+import { sortAnchors, logger } from '../utils'
 
 export type InspectorArgs = InspectorContract & {
   publicKey: string;
@@ -74,7 +74,7 @@ export class Inspector {
       const networkType = getNetwork(this.args.networkType);
       this.publicAccount = PublicAccount.createFromPublicKey(this.args.publicKey, networkType);
     } catch (e) {
-      console.log(e);
+      logger.error(`could not create NEM address: ${JSON.stringify({...this.args})}`);
       throw Error('NEM address is not valid');
     }
   }
@@ -119,7 +119,7 @@ export class Inspector {
       
       // break the loop if there's no more data from upstream
       if (!txs.length) {
-        console.log("[INFO] `fetchAnchors` completed: no more data from upstream")
+        logger.info("`fetchAnchors` completed: no more data from upstream")
         break
       }
 
@@ -137,10 +137,7 @@ export class Inspector {
               })
             }
           } catch (e) {
-            console.log(
-              `[ERROR] 'messages.Anchor.deserializeBinary' failed: ${e.message}. tx:\n`, 
-              JSON.stringify(tx),
-            )
+            logger.warn(`'messages.Anchor.deserializeBinary' failed: ${e.message}. tx: ${JSON.stringify(tx)}`)
           }
         }
       }
@@ -162,7 +159,7 @@ export class Inspector {
               }
             })
           } else {
-            console.log("[WARN] lock with no height won't be considered as anchor. lock:", JSON.stringify(lock.toObject()))
+            logger.warn(`lock with no height won't be considered as anchor: ${JSON.stringify(lock.toObject())}`)
           }
         }
       }
@@ -171,10 +168,10 @@ export class Inspector {
       iter++
 
       anchors = [...anchors, ...anchorsFound]
-      console.log(`[INFO] found ${anchorsFound.length} anchor(s) across ${txs.length} txs in iter #${iter}. total anchors: ${anchors.length}`)
+      logger.info(`found ${anchorsFound.length} anchor(s) across ${txs.length} txs in iter #${iter}. total anchors: ${anchors.length}`)
     }
 
-    return anchors;
+    return sortAnchors(anchors);
   }
 
   private async verifyLock(lock: messages.Lock): Promise<boolean> {
@@ -189,10 +186,10 @@ export class Inspector {
         if (island.height === ship.height) {
           return island.hash === ship.hash
         }
-        console.log("[WARN] HEIGHT NOT SAME", {ship, island})
+        logger.warn("HEIGHT NOT SAME", {ship, island})
         return false
       } catch (e) {
-        console.log("[ERROR] `verifyLock` failed:", e)
+        logger.warn("`verifyLock` failed:", e)
         return false
       }
     }
