@@ -9,8 +9,8 @@
   "scripts": {
     "dev": "ts-node cli.ts",
     "proto": "yarn run proto-generate && yarn run proto-generate-types",
-    "proto-generate": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./_proto --grpc_out=./_proto --plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` -I ../../anchor anchor.proto",
-    "proto-generate-types": "protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./_proto -I ../../anchor anchor.proto"
+    "proto-generate": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./_proto --grpc_out=./_proto --plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` -I ../../_proto anchor.proto",
+    "proto-generate-types": "protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./_proto -I ../../protobuf anchor.proto"
   },
   "devDependencies": {
     "@types/node": "^12.0.0",
