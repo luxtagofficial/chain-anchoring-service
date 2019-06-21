@@ -1,9 +1,9 @@
 import { InspectedAnchor } from '../types'
 
-// sort anchors descendingly based on offsetID
-const compare = (a, b) => {
-  const offsetA = a.offsetID.toUpperCase();
-  const offsetB = b.offsetID.toUpperCase();
+// sort anchors descendingly based on `island.offsetID`
+const compare = (a: InspectedAnchor, b: InspectedAnchor): number => {
+  const offsetA = a.island.offsetID.toUpperCase();
+  const offsetB = b.island.offsetID.toUpperCase();
   
   if (offsetA == offsetB) {
     return 0

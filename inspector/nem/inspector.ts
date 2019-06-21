@@ -2,10 +2,10 @@ import fetch from 'node-fetch';
 import { parse } from 'url';
 import grpc from 'grpc';
 import * as nemSDK from 'nem-sdk';
-import * as services from './_proto/anchor_grpc_pb';
-import * as messages from './_proto/anchor_pb';
+import * as services from '../_proto/anchor_grpc_pb';
+import * as messages from '../_proto/anchor_pb';
 import { useRestSkipper } from '../useRestSkipper';
-import { InspectorContract, InspectedAnchor, ErrorObject, PAGE_SIZE } from '../types';
+import { InspectorContract, InspectorLock, InspectedAnchor, ErrorObject, PAGE_SIZE } from '../types';
 import { sortAnchors } from '../utils'
 
 const nem = nemSDK.default;
@@ -112,10 +112,7 @@ export class Inspector {
           break
         }
 
-        // map offset id and lock list. for nem 1,
-        // `meta.id` is used as offset id.
-        let lockList: { [key: string]: messages.Lock[] } = {}
-
+        let locks: InspectorLock[] = []
         txs.forEach((tx) => {
           const messageObj = tx.transaction.message;
           if (messageObj && messageObj.payload) {
@@ -123,7 +120,11 @@ export class Inspector {
               const anchor = messages.Anchor.deserializeBinary(hextoUint8Arr(messageObj.payload));
               // Ignore anchor with no locks
               if (anchor.getLocksList().length !== 0) {
-                lockList[tx.meta.id] = anchor.getLocksList();
+                locks.push({
+                  offsetID: tx.meta.id.toString(),
+                  txHash: tx.meta.hash.data,
+                  lockList: anchor.getLocksList(),
+                })
               }
             } catch (e) {
               console.log(
@@ -135,8 +136,8 @@ export class Inspector {
         });
 
         let anchorsFound: InspectedAnchor[] = []
-        for (const offsetID in lockList) {
-          for (const lock of lockList[offsetID]) {
+        for (const { offsetID, txHash, lockList } of locks) {
+          for (const lock of lockList) {
             const jsonLock = JSON.stringify(lock.toObject())
 
             const block = lock.getBlock()!
@@ -146,8 +147,11 @@ export class Inspector {
               anchorsFound.push({
                 hash: block.getHash(),
                 height,
-                offsetID,
                 valid,
+                island: {
+                  offsetID,
+                  txHash,
+                }
               })
             } else {
               console.log("[WARN] lock with no height won't be considered as anchor. lock:", JSON.stringify(lock.toObject()))
