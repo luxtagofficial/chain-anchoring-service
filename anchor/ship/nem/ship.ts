@@ -4,6 +4,7 @@ import * as messages from '../../_proto/anchor_pb';
 
 const LOCK_NAME = 'LuxTag Chain Anchoring Service'
 const LOCK_VERSION = '1.0.1'
+const LOCK_TYPE = messages.IslandType.NEM
 
 const currentBlockHeight = async (endpoint: string): Promise<string> => {
     return fetch(endpoint + '/chain/height')
@@ -43,7 +44,7 @@ export const getLock = async (endpoint: string): Promise<messages.Lock> => {
 	const lock = new messages.Lock()
 	lock.setVersion(LOCK_VERSION)
 	lock.setName(LOCK_NAME)
-	lock.setType(messages.IslandType['NEM1'])
+	lock.setType(LOCK_TYPE)
 	lock.setBlock(block)
 
 	return lock

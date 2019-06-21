@@ -5,6 +5,10 @@ import * as messages from '../../_proto/anchor_pb';
 
 const nem = nemSDK.default;
 
+const ANCHOR_DESCRIPTION = 'LuxTag Chain Anchoring Service'
+const ANCHOR_VERSION = '1.0.1'
+const ANCHOR_TARGET = messages.IslandType.NEM
+
 export interface IIslandArgs {
   endpoint: string;
   networkType: string;
@@ -35,9 +39,9 @@ export class Island {
 
   public generateAnchor(lock: messages.Lock): messages.Anchor {
     const anchor = new messages.Anchor();
-    anchor.setDescription('LuxTag Chain Anchoring Service');
-    anchor.setVersion('1.0.2');
-    anchor.setTarget(messages.IslandType.NEM);
+    anchor.setDescription(ANCHOR_DESCRIPTION);
+    anchor.setVersion(ANCHOR_VERSION);
+    anchor.setTarget(ANCHOR_TARGET);
     anchor.addLocks(lock);
     return anchor;
   }

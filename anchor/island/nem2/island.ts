@@ -1,6 +1,5 @@
 import fetch from 'node-fetch';
 import { parse } from 'url';
-import * as services from '../../_proto/anchor_grpc_pb';
 import * as messages from '../../_proto/anchor_pb';
 import { 
   Account,
@@ -11,6 +10,10 @@ import {
   PlainMessage,
   TransferTransaction,
 } from 'nem2-sdk';
+
+const ANCHOR_DESCRIPTION = 'LuxTag Chain Anchoring Service'
+const ANCHOR_VERSION = '1.0.1'
+const ANCHOR_TARGET = messages.IslandType.NEM2
 
 export interface IIslandArgs {
   endpoint: string;
@@ -43,9 +46,9 @@ export class Island {
 
   public generateAnchor(lock: messages.Lock): messages.Anchor {
     const anchor = new messages.Anchor();
-    anchor.setDescription('LuxTag Chain Anchoring Service');
-    anchor.setVersion('1.0.2');
-    anchor.setTarget(messages.IslandType.NEM2);
+    anchor.setDescription(ANCHOR_DESCRIPTION);
+    anchor.setVersion(ANCHOR_VERSION);
+    anchor.setTarget(ANCHOR_TARGET);
     anchor.addLocks(lock);
     return anchor;
   }
