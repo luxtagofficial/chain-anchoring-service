@@ -8,7 +8,7 @@ Example 2: POST
 
 curl 'https://cas-inspector.luxtagofficial.now.sh/api/anchors' -d \
 '{
-  "offset": "1",
+  "offset": "5CCC11E08C73D400016CA264",
   "inspector": {
     "name": "IIUM Private Chain",
     "type": "NEM2",
@@ -28,7 +28,7 @@ curl 'https://cas-inspector.luxtagofficial.now.sh/api/anchors' -d \
 Example 3: POST (with different meta)
 curl 'https://cas-inspector.luxtagofficial.now.sh/api/anchors' -d \
 '{
-  "offset": "1",
+  "offset": "418019",
   "inspector": {
     "name": "NEM Public Chain",
     "type": "NEM",

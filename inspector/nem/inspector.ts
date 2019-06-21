@@ -37,7 +37,9 @@ export class Inspector {
   private island: any;
   private skipper: services.InspectClient | any;
   private useRestSkipper: boolean;
-  private reUint = /^[1-9][0-9]{0,}$/
+  
+  // any integer greater than 0
+  private reOffsetID = /^[1-9][0-9]{0,}$/
 
   public constructor(args: InspectorArgs) {
     this.args = args;
@@ -89,7 +91,7 @@ export class Inspector {
       let anchors: InspectedAnchor[] = []
       let iter = 0
 
-      if (offset && !this.reUint.test(offset)) {
+      if (offset && !this.reOffsetID.test(offset)) {
         return {
           error: 'offset must be integer greater than 0',
           code: 'E_INVALID_ANCHOR_OFFSET'
@@ -103,9 +105,10 @@ export class Inspector {
           throw new Error('unexpected response from endpoint:' + JSON.stringify(resp));
         }
 
+        const txs = resp.data
         // break the loop if there's no more data from upstream
-        if (!resp.data.length) {
-          console.log("[INFO] `fetchTxs` completed: no more data from upstream")
+        if (!txs.length) {
+          console.log("[INFO] `fetchAnchors` completed: no more data from upstream")
           break
         }
 
@@ -113,7 +116,7 @@ export class Inspector {
         // `meta.id` is used as offset id.
         let lockList: { [key: string]: messages.Lock[] } = {}
 
-        resp.data.forEach((tx) => {
+        txs.forEach((tx) => {
           const messageObj = tx.transaction.message;
           if (messageObj && messageObj.payload) {
             try {
@@ -122,7 +125,12 @@ export class Inspector {
               if (anchor.getLocksList().length !== 0) {
                 lockList[tx.meta.id] = anchor.getLocksList();
               }
-            } catch (e) { /* Ignore messages that cannot be parsed */ }
+            } catch (e) {
+              console.log(
+                `[ERROR] 'messages.Anchor.deserializeBinary' failed: ${e.message}. tx:\n`, 
+                JSON.stringify(tx),
+              )
+            }
           }
         });
 
@@ -147,11 +155,11 @@ export class Inspector {
           }
         }
 
-        lastTxID = resp.data[resp.data.length - 1].meta.id
+        lastTxID = txs[txs.length - 1].meta.id
         iter++
 
         anchors = [...anchors, ...anchorsFound]
-        console.log(`[INFO] found ${anchorsFound.length} anchor(s) in iter #${iter}. total anchors: ${anchors.length}`)
+        console.log(`[INFO] found ${anchorsFound.length} anchor(s) across ${txs.length} txs in iter #${iter}. total anchors: ${anchors.length}`)
       }
 
       return sortAnchors(anchors)
