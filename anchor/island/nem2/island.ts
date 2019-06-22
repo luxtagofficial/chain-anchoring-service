@@ -11,6 +11,8 @@ import {
   TransferTransaction,
 } from 'nem2-sdk';
 
+import { convert } from 'nem2-library';
+
 const ANCHOR_DESCRIPTION = 'LuxTag Chain Anchoring Service'
 const ANCHOR_VERSION = '1.0.1'
 const ANCHOR_TARGET = messages.IslandType.NEM2
@@ -55,18 +57,14 @@ export class Island {
 
   public async announceAnchor(anchor: messages.Anchor): Promise<any> {
     const sender = Account.createFromPrivateKey(this.args.privateKey, NetworkType[this.args.networkType]);
-    const accountHttp = new AccountHttp(this.args.endpoint);
     const transactionHttp = new TransactionHttp(this.args.endpoint);
 
+    // BLAME(wzulfikar): monkey patch to bypass underlying hex conversion
+    const utf8ToHexUnpatched = convert.utf8ToHex
+    convert.utf8ToHex = str => str
+
     const serialized = anchor.serializeBinary();
-    
-    // let msg = Buffer.from(serialized).toString('utf8')
-    // console.log("msg:", msg)
-    // // fix "Error: hex string has unexpected size '285'"
-    // msg += '\u001a\f101645436340'
-
-    const msg = 'hello'
-
+    const msg = Buffer.from(serialized).toString('hex')
     const recipientAddress = sender.address
     const transferTransaction = TransferTransaction.create(
         Deadline.create(),
@@ -74,8 +72,11 @@ export class Island {
         [],
         PlainMessage.create(msg),
         NetworkType.MIJIN_TEST);
-
     const signedTx = sender.sign(transferTransaction)
+
+    // put back patched function
+    convert.utf8ToHex = utf8ToHexUnpatched
+
     return transactionHttp.announce(signedTx)
       .toPromise()
       .then(() => ({

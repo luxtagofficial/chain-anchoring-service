@@ -52,21 +52,23 @@ export class Island {
     const address = nem.model.address.toAddress(keyPair.publicKey.toString(), networkId);
     const common = nem.model.objects.create('common')('', this.args.privateKey);
     const endpoint = nem.model.objects.create('endpoint')(this.hostname, this.port);
+    
     const serialized = anchor.serializeBinary();
-    const hex = nem.utils.convert.ua2hex(serialized);
-    // Hack to convert to utf8 as nem-sdk converts message from utf8 to hex by default
-    const utf8 = nem.utils.convert.hex2a(hex);
+    const utf8 = Buffer.from(serialized).toString('utf-8')
+
     const transferTransaction = nem.model.objects.create('transferTransaction')(
       address,
       0,
       utf8,
     );
+
     const transactionEntity = nem.model.transactions.prepare('transferTransaction')(
       common,
       transferTransaction,
       networkId,
     );
-    // Shift deadline 5 minutes later to fix timestamp too far in future bug
+
+    // Shift deadline 5 minutttes later to fix timestamp too far in future bug
     // tslint:disable-next-line:no-string-literal
     transactionEntity['timeStamp'] = transactionEntity['timeStamp'] - 300;
     // tslint:disable-next-line:no-string-literal

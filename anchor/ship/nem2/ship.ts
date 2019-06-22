@@ -13,7 +13,7 @@ const currentBlockHeight = async (endpoint: string): Promise<string> => {
 }
 
 const CATAPULT_EPOCH_MS = 1459468800000
-const uintTimestampToUtc = (uintTimestamp) => {
+const uintTimestampToUtc = (uintTimestamp): number => {
 	const [ ts, multiplier ] = uintTimestamp
 	
 	// 4294967296 is 23^2 (uint conversion)
@@ -33,7 +33,7 @@ const currentBlock = async (endpoint: string): Promise<messages.Block> => {
 
 			const b = new messages.Block()
 			b.setHash(hash)
-			b.setTimestamp(timestamp)
+			b.setTimestamp(timestamp.toString())
 			b.setHeight(height)
 			
 			return b
