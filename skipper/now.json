@@ -1,5 +1,6 @@
 {
     "name": "cas-skipper",
+    "scope": "luxtagofficial",
     "public": false,
     "version": 2,
     "builds": [

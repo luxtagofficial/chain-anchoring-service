@@ -1,5 +1,6 @@
 {
   "name": "cas-inspector",
+  "scope": "luxtagofficial",
   "public": false,
   "version": 2,
   "builds": [

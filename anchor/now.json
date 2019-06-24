@@ -1,5 +1,6 @@
 {
 	"version": 2,
+	"scope": "luxtagofficial",
 	"name": "cas-shipper",
 	"builds": [
 		{ "src": "now-handler/api.ts", "use": "@now/node" }
