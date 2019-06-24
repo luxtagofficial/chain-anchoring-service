@@ -59,7 +59,9 @@ export class Island {
     const sender = Account.createFromPrivateKey(this.args.privateKey, NetworkType[this.args.networkType]);
     const transactionHttp = new TransactionHttp(this.args.endpoint);
 
-    // BLAME(wzulfikar): monkey patch to bypass underlying hex conversion
+    // BLAME(wzulfikar): monkey patch to bypass underlying hex conversion.
+    // fixed at nem2-sdk@0.12.3.
+    // see: https://github.com/nemtech/nem2-sdk-typescript-javascript/issues/175
     const utf8ToHexUnpatched = convert.utf8ToHex
     convert.utf8ToHex = str => str
 
