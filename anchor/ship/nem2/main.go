@@ -20,7 +20,7 @@ import (
 	"math/big"
 	"time"
 
-	pb "github.com/luxtagofficial/chain-anchoring-service/anchor"
+	pb "github.com/luxtagofficial/chain-anchoring-service/protobuf"
 	"github.com/luxtagofficial/nem2-sdk-go/sdk"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"

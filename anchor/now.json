@@ -1,0 +1,27 @@
+{
+	"version": 2,
+	"scope": "luxtagofficial",
+	"name": "cas-shipper",
+	"builds": [
+		{ "src": "now-handler/api.ts", "use": "@now/node" }
+	],
+	"env": {
+		"PRIVATE_KEY__BCM_IIUM": "@private_key__bcm_iium",
+		"PRIVATE_KEY__BCM_NEM": "@private_key__bcm_nem"
+	},
+	"routes": [
+		{ 
+			"src": "(.*)",
+			"dest": "now-handler/api.ts",
+			"methods": [
+				"GET",
+				"OPTIONS"
+			],
+			"headers": {
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
+				"Access-Control-Allow-Credentials": "true"
+			}
+		}
+	]
+}

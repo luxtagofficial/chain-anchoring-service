@@ -1,0 +1,28 @@
+{
+	"bcm::iium": {
+		"ship": {
+			"type": "NEM2",
+			"endpoint": "http://api.bcm.luxtag.io",
+			"networkType": "MIJIN_TEST"
+		},
+		"island": {
+			"type": "NEM2",
+			"endpoint": "https://api.iium.luxtag.io",
+			"networkType": "MIJIN_TEST",
+			"privateKey": "some-private-key"
+		}
+	},
+	"bcm::nem": {
+		"ship": {
+			"type": "NEM2",
+			"endpoint": "https://api.bcm.luxtag.io",
+			"networkType": "MIJIN_TEST"
+		},
+		"island": {
+			"type": "NEM",
+			"endpoint": "http://bigalice2.nem.ninja:7890",
+			"networkType": "testnet",
+			"privateKey": "some-private-key"
+		}
+	}
+}
