@@ -98,6 +98,11 @@ island-nem2:
 	@echo "*****Running Island nem2 package*****"
 	@go run ${PWD}/anchor/island/nem2/main.go
 
+island-eth:
+	@echo "*****Running Island eth package*****"
+	@cd ${PWD}/anchor/island/eth/ && \
+	yarn run dev
+
 inspector-nem:
 	@echo "*****Running Inspector nem package*****"
 	@cd ${PWD}/inspector/nem/ && \

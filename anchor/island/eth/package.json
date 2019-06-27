@@ -1,0 +1,25 @@
+{
+  "name": "island-eth-typescript",
+  "version": "0.0.0",
+  "description": "Island Chain Anchor for Ethereum blockchain",
+  "main": "index.js",
+  "repository": "https://github.com/luxtagofficial/chain-anchoring-service/",
+  "author": "Jonathan Tey",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node cli.ts",
+    "proto": "yarn run proto-generate && yarn run proto-generate-types",
+    "proto-generate": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./anchor --grpc_out=./anchor --plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` -I ../../anchor anchor.proto",
+    "proto-generate-types": "protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./anchor -I ../../anchor anchor.proto"
+  },
+  "dependencies": {
+    "google-protobuf": "^3.8.0",
+    "grpc": "^1.21.1",
+    "ts-node": "^8.3.0",
+    "tslint": "^5.17.0",
+    "typescript": "^3.5.2",
+    "web3": "^1.0.0-beta.55",
+    "yargs": "^13.2.4"
+  }
+}
