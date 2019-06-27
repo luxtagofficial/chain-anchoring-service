@@ -19,7 +19,7 @@
 import grpc from 'grpc';
 import yargs from 'yargs';
 import * as services from '../../_proto/anchor_grpc_pb';
-import { Island, IIslandArgs } from './island';
+import { IIslandArgs, Island } from './island';
 
 const parseArguments = (): {islandArgs: IIslandArgs, port: string} => {
   const args = yargs
@@ -54,12 +54,12 @@ const parseArguments = (): {islandArgs: IIslandArgs, port: string} => {
   return {
     islandArgs: {
       endpoint: args.endpointHost + ':' + args.endpointPort,
-      privateKey: args.privateKey,
       networkType: args.networkType,
+      privateKey: args.privateKey,
     },
     port: args.port,
   };
-}
+};
 
 const startServer = (island: Island, grpcPort: string) => {
   const server = new grpc.Server();
@@ -71,11 +71,11 @@ const startServer = (island: Island, grpcPort: string) => {
   }
   server.start();
   console.log(`Island listening on ${grpcPort}`);
-}
+};
 
 function main() {
-  const { islandArgs, port } = parseArguments()
-  const island = new Island(islandArgs)
+  const { islandArgs, port } = parseArguments();
+  const island = new Island(islandArgs);
   startServer(island, port);
 }
 

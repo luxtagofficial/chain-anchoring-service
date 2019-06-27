@@ -1,13 +1,13 @@
+import * as nemSDK from 'nem-sdk';
 import fetch from 'node-fetch';
 import { parse } from 'url';
-import * as nemSDK from 'nem-sdk';
 import * as messages from '../../_proto/anchor_pb';
 
 const nem = nemSDK.default;
 
-const ANCHOR_DESCRIPTION = 'LuxTag Chain Anchoring Service'
-const ANCHOR_VERSION = '1.0.1'
-const ANCHOR_TARGET = messages.IslandType.NEM
+const ANCHOR_DESCRIPTION = 'LuxTag Chain Anchoring Service';
+const ANCHOR_VERSION = '1.0.1';
+const ANCHOR_TARGET = messages.IslandType.NEM;
 
 export interface IIslandArgs {
   endpoint: string;
@@ -23,9 +23,9 @@ export class Island {
   public constructor(args: IIslandArgs) {
     this.args = args;
 
-    const { protocol, hostname, port } = parse(this.args.endpoint)
-    this.hostname = protocol + '//' + hostname
-    this.port = port || (protocol == 'http:' ? '80' : '443')
+    const { protocol, hostname, port } = parse(this.args.endpoint);
+    this.hostname = protocol + '//' + hostname;
+    this.port = port || (protocol === 'http:' ? '80' : '443');
   }
 
   public location(call, callback) {
@@ -52,9 +52,9 @@ export class Island {
     const address = nem.model.address.toAddress(keyPair.publicKey.toString(), networkId);
     const common = nem.model.objects.create('common')('', this.args.privateKey);
     const endpoint = nem.model.objects.create('endpoint')(this.hostname, this.port);
-    
+
     const serialized = anchor.serializeBinary();
-    const utf8 = Buffer.from(serialized).toString('utf-8')
+    const utf8 = Buffer.from(serialized).toString('utf-8');
 
     const transferTransaction = nem.model.objects.create('transferTransaction')(
       address,
@@ -77,14 +77,14 @@ export class Island {
       .model
       .transactions
       .send(common, transactionEntity, endpoint)
-      .then(resp => ({
-        hash: resp.transactionHash.data
-      }))
+      .then((resp) => ({
+        hash: resp.transactionHash.data,
+      }));
   }
 
   public currentBlockHeight(): Promise<string> {
     return fetch(this.args.endpoint + '/chain/height')
-      .then(resp => resp.json())
-      .then(json => json.height.toString())
+      .then((resp) => resp.json())
+      .then((json) => json.height.toString());
   }
 }

@@ -48,7 +48,7 @@ const parseArguments = (): {islandArgs: IIslandArgs, port: string} => {
     },
     port: args.port,
   };
-}
+};
 
 const startServer = (island: Island, grpcPort: string) => {
   const server = new grpc.Server();
@@ -60,7 +60,7 @@ const startServer = (island: Island, grpcPort: string) => {
   }
   server.start();
   console.log(`Island listening on ${grpcPort}`);
-}
+};
 
 function main() {
   const { islandArgs, port } = parseArguments();
