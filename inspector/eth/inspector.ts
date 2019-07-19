@@ -89,13 +89,11 @@ export class Inspector {
 
     while (anchors.length < PAGE_SIZE && iter < 1000) { // Stop searching after 1000 blocks
       await this.web3.eth.getBlock(currentBlockHeight, true).then(async (block) => {
-        console.log(block.number);
         if (block.transactions.length > 0) {
           const txs = block.transactions.filter((tx) => tx.from === this.accountAddress);
           const locks: InspectorLock[] = [];
           for (const tx of txs) {
             try {
-              console.log(tx.input);
               const anchor = messages.Anchor.deserializeBinary(hex2arr(tx.input));
               // Ignore anchor with no locks
               if (anchor.getLocksList().length !== 0) {
