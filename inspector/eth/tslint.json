@@ -1,0 +1,15 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended"
+  ],
+  "jsRules": {},
+  "rulesDirectory": [],
+  "rules": {
+    "quotemark": [true, "single"],
+    "no-console": false,
+    "ordered-imports": true,
+    "max-line-length": [true, {"limit": 120, "ignore-pattern": "^import |^export {(.*?)}"}],
+    "indent": [true, "spaces", 2]
+  }
+}

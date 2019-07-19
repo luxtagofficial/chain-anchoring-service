@@ -113,6 +113,11 @@ inspector-nem2:
 	@cd ${PWD}/inspector/nem2/ && \
 	yarn run dev
 
+inspector-eth:
+	@echo "*****Running Inspector eth package*****"
+	@cd ${PWD}/inspector/eth/ && \
+	yarn run dev
+
 skipper-nem2:
 	@echo "*****Running Skipper nem2 package*****"
 	@cd ${PWD}/skipper/nem2/ && \

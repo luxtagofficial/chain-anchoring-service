@@ -1,7 +1,7 @@
 {
-  "name": "inspector-nem-typescript",
+  "name": "inspector-nem2-typescript",
   "version": "0.0.0",
-  "description": "Inspector Chain Anchor for NEM blockchain",
+  "description": "Inspector Chain Anchor for NEM Catapult blockchain",
   "main": "index.js",
   "repository": "https://github.com/luxtagofficial/chain-anchoring-service/",
   "author": "Jonathan Tey",
@@ -13,19 +13,16 @@
     "proto-generate-types": "protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./_proto -I ../../protobuf anchor.proto"
   },
   "devDependencies": {
-    "@types/node": "^12.0.0",
     "grpc-tools": "^1.7.1",
     "grpc_tools_node_protoc_ts": "^2.5.0",
-    "ts-node": "^8.0.2",
-    "tslint": "^5.13.0",
-    "typescript": "^3.3.3333"
+    "ts-node": "^8.3.0",
+    "tslint": "^5.17.0",
+    "typescript": "^3.5.2"
   },
   "dependencies": {
     "google-protobuf": "^3.8.0",
-    "nem-sdk": "^1.6.7",
-    "url": "^0.11.0"
-  },
-  "resolutions": {
-    "request": "2.88.0"
+    "rxjs": "^6.5.2",
+    "web3": "^1.0.0-beta.55",
+    "yargs": "^13.2.4"
   }
 }

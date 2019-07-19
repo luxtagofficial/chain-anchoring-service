@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dev": "now dev --debug",
-    "now": "export $(cat .env) && now -e PRIVATE_KEY__BCM_IIUM -e PRIVATE_KEY__BCM_NEM --target=staging"
+    "now": "export $(cat .env) && now -e PRIVATE_KEY__BCM_IIUM -e PRIVATE_KEY__BCM_NEM -e PRIVATE_KEY__BCM_ETH --target=staging"
   },
   "dependencies": {
     "@types/node": "^12.0.8",
@@ -11,6 +11,7 @@
     "nem-sdk": "^1.6.7",
     "nem2-sdk": "^0.11.6",
     "node-fetch": "^2.6.0",
-    "url": "^0.11.0"
+    "url": "^0.11.0",
+    "web3": "^1.0.0-beta.55"
   }
 }

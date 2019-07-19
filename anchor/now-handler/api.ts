@@ -1,6 +1,6 @@
-import { send } from 'micro'
+import { send } from 'micro';
+import anchors from '../anchors.json';
 
-import anchors from '../anchors.json'
 
 export default async (req, res) => {
 	if (req.method === 'OPTIONS') {
@@ -34,7 +34,7 @@ export default async (req, res) => {
 
 	let islandMod
 	try {
-		islandMod = require(`../island/${islandConfig.type.toLowerCase()}/island`)
+		islandMod = require(`../island/${islandConfig.type.toLowerCase()}/island.ts`)
 	} catch (e) {
 		console.log("error:", e)
 		return send(res, 400, {
@@ -55,7 +55,7 @@ export default async (req, res) => {
 	const anchor = await island.generateAnchor(lock)
 	const announced = await island.announceAnchor(anchor)
 
-	send(res, 200, { 
+	send(res, 200, {
 		lock: lock.toObject(),
 		island: {
 			type: islandConfig.type,

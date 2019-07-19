@@ -73,4 +73,10 @@ export class Island {
       throw Error('Unable to send transaction');
     }
   }
+
+  public currentBlockHeight(): Promise<string> {
+    const web3 = new Web3(new Web3.providers.HttpProvider(this.args.endpoint));
+    return web3.eth.getBlock('latest')
+      .then((block) => block.number.toString());
+  }
 }

@@ -1,9 +1,7 @@
-import { parse } from 'url'
-import { send } from 'micro'
-
-import { Inspector, InspectorArgs } from '../nem2/inspector'
-import { Joi, validate, getMetaError } from './utils/validator'
-import { ErrorObject } from '../types'
+import { send } from 'micro';
+import { Inspector, InspectorArgs } from '../nem2/inspector';
+import { ErrorObject } from '../types';
+import { getMetaError, Joi } from './utils/validator';
 
 const metaSchema = {
 	networkType: Joi.string().required(),
@@ -26,7 +24,7 @@ const fetchAnchors = async (args: InspectorArgs, offset: string) => {
 	return { anchors: resp }
 }
 
-export const chainInfo = (endpoint) => async (res) => {  	
+export const chainInfo = (endpoint) => async (res) => {
 	const chainInfo = await Inspector.chainInfo(endpoint);
 	return send(res, 200, chainInfo);
 }

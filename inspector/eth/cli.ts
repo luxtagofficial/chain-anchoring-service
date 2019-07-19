@@ -23,7 +23,7 @@ import { Inspector, InspectorArgs } from './inspector';
 function parseArguments(): InspectorArgs {
   const args = yargs
     .help('help').alias('help', 'h')
-    .env('INSPECTOR_NEM2')
+    .env('INSPECTOR_ETH')
     .option('skipper', {
       alias: 'l',
       description: 'Skipper gRPC url',
@@ -31,17 +31,12 @@ function parseArguments(): InspectorArgs {
     })
     .option('endpoint', {
       alias: 'e',
-      description: 'Catapult endpoint',
+      description: 'Ethereum RPC endpoint',
       type: 'string',
     })
-    .option('publicKey', {
-      alias: 'pk',
-      description: 'Public key of account to fetch transactions from',
-      type: 'string',
-    })
-    .option('networkType', {
-      alias: 'n',
-      description: 'NEM node endpoint type. Choose from `MIJIN_TEST`',
+    .option('address', {
+      alias: 'a',
+      description: 'Address of account to fetch transactions from',
       type: 'string',
     })
     .option('useRestSkipper', {
@@ -53,8 +48,7 @@ function parseArguments(): InspectorArgs {
 
   return {
     island: args.endpoint,
-    networkType: args.networkType,
-    publicKey: args.publicKey,
+    accountAddress: args.address,
 
     // if skipper has http or https prefix, rest skipper will be used.
     skipper: args.skipper,

@@ -16,38 +16,50 @@
  *
  */
 
-import fetch from 'node-fetch';
 import grpc from 'grpc';
-import {
-  AccountHttp,
-  NetworkType,
-  PublicAccount,
-  QueryParams,
-  TransferTransaction
-} from 'nem2-sdk';
-import { EMPTY } from 'rxjs';
-import { concatMap, expand } from 'rxjs/operators';
+import { AccountHttp, NetworkType, PublicAccount, QueryParams, TransferTransaction } from 'nem2-sdk';
+import fetch from 'node-fetch';
+import { InspectedAnchor, InspectorContract, InspectorLock, PAGE_SIZE } from '../types';
+import { useRestSkipper } from '../useRestSkipper';
+import { logger, sortAnchors } from '../utils';
 import * as services from '../_proto/anchor_grpc_pb';
 import * as messages from '../_proto/anchor_pb';
-import { useRestSkipper } from '../useRestSkipper';
-import { InspectorContract, InspectorLock, InspectedAnchor, ErrorObject, PAGE_SIZE } from '../types';
-import { sortAnchors, logger } from '../utils'
 
 export type InspectorArgs = InspectorContract & {
   publicKey: string;
   networkType: string;
-}
+};
 
 const handleUpstreamMissingKey = (key: string, jsonResponse: object) => {
   return {
     error: `upstream returns unexpected response: '.${key}' key is missing.`,
     details: [
       { jsonResponse },
-    ]
-  }
-}
+    ],
+  };
+};
 
 export class Inspector {
+
+  public static async chainInfo(endpoint: string) {
+    const [ jsonBlock1, jsonDiagnostic ] = await Promise.all([
+      fetch(endpoint + '/block/1').then((resp) => resp.json()),
+      fetch(endpoint + '/diagnostic/storage').then((resp) => resp.json()),
+    ]);
+
+    if (!jsonBlock1.meta) {
+      return handleUpstreamMissingKey('meta', jsonBlock1);
+    }
+
+    if (!jsonDiagnostic.numBlocks) {
+      return handleUpstreamMissingKey('numBlocks', jsonBlock1);
+    }
+
+    return {
+      genesisHash: jsonBlock1.meta.hash,
+      currentBlockHeight: jsonDiagnostic.numBlocks,
+    };
+  }
   private args: InspectorArgs;
   private skipper: services.InspectClient | any;
   private accountHttp: AccountHttp;
@@ -56,14 +68,14 @@ export class Inspector {
 
   // offset id is 24 chars of mongo's object id.
   // example: 5CCC11E08C73D400016CA264
-  private reOffsetID = /^[A-Z0-9]{24}$/
+  private reOffsetID = /^[A-Z0-9]{24}$/;
 
   public constructor(args: InspectorArgs) {
     this.args = args;
 
-    this.useRestSkipper = this.args.skipper.startsWith('http')
+    this.useRestSkipper = this.args.skipper.startsWith('http');
     if (this.useRestSkipper) {
-      this.skipper = useRestSkipper(this.args.skipper)
+      this.skipper = useRestSkipper(this.args.skipper);
     } else {
       this.skipper = new services.InspectClient(this.args.skipper, grpc.credentials.createInsecure());
     }
@@ -79,78 +91,58 @@ export class Inspector {
     }
   }
 
-  public static async chainInfo(endpoint: string) {
-    const [ jsonBlock1, jsonDiagnostic ] = await Promise.all([
-      fetch(endpoint + '/block/1').then(resp => resp.json()),
-      fetch(endpoint + '/diagnostic/storage').then(resp => resp.json()),
-    ])
-
-    if (!jsonBlock1.meta) {
-      return handleUpstreamMissingKey('meta', jsonBlock1)
-    }
-
-    if (!jsonDiagnostic.numBlocks) {
-      return handleUpstreamMissingKey('numBlocks', jsonBlock1)
-    }
-
-    return {
-      genesisHash: jsonBlock1.meta.hash,
-      currentBlockHeight: jsonDiagnostic.numBlocks,
-    }
-  }
-
   public async fetchAnchors(offset?: string) {
     const pageSize: number = 100;
 
-    offset = offset ? offset.toUpperCase() : undefined
+    offset = offset ? offset.toUpperCase() : undefined;
     if (offset && !this.reOffsetID.test(offset)) {
       return {
-        error: "NEM2 offset must be 24 chars long of mongo's object ID.",
-        code: 'E_INVALID_ANCHOR_OFFSET'
-      }
+        error: 'NEM2 offset must be 24 chars long of mongo\'s object ID.',
+        code: 'E_INVALID_ANCHOR_OFFSET',
+      };
     }
 
-    let iter = 0
-    let lastTxID = offset
-    let anchors: InspectedAnchor[] = []
+    let iter = 0;
+    let lastTxID = offset;
+    let anchors: InspectedAnchor[] = [];
     while (anchors.length < PAGE_SIZE) {
       const queryParams = new QueryParams(pageSize, lastTxID);
       const txs = await this.accountHttp.transactions(this.publicAccount, queryParams).toPromise();
-      
+
       // break the loop if there's no more data from upstream
       if (!txs.length) {
-        logger.info("`fetchAnchors` completed: no more data from upstream")
-        break
+        logger.info('`fetchAnchors` completed: no more data from upstream');
+        break;
       }
 
-      let locks: InspectorLock[] = []
+      const locks: InspectorLock[] = [];
       for (const tx of txs) {
         if (tx instanceof TransferTransaction) {
           try {
             const anchor = messages.Anchor.deserializeBinary(str2arr(tx.message.payload));
             // Ignore anchor with no locks
-            if (anchor.getLocksList().length !== 0) {
+            if (anchor.getLocksList().length !== 0 && tx.transactionInfo) {
               locks.push({
                 offsetID: tx.transactionInfo.id,
-                txHash: tx.transactionInfo.hash,
+                txHash: tx.transactionInfo.hash || '',
                 lockList: anchor.getLocksList(),
-              })
+              });
             }
           } catch (e) {
-            logger.warn(`'messages.Anchor.deserializeBinary' failed: ${e.message}. tx: ${JSON.stringify(tx)}`)
+            logger.warn(`'messages.Anchor.deserializeBinary' failed: ${e.message}. tx: ${JSON.stringify(tx)}`);
           }
         }
       }
 
-      let anchorsFound: InspectedAnchor[] = []
+      const anchorsFound: InspectedAnchor[] = [];
       for (const { offsetID, txHash, lockList } of locks) {
         for (const lock of lockList) {
           if ((anchors.length + anchorsFound.length) >= PAGE_SIZE) {
-            break
+            break;
           }
 
-          const block = lock.getBlock()!
-          const height = block.getHeight()
+          const block = lock.getBlock()!;
+          const height = block.getHeight();
           if (height) {
             const valid = await this.verifyLock(lock);
             anchorsFound.push({
@@ -160,19 +152,22 @@ export class Inspector {
               island: {
                 offsetID,
                 txHash,
-              }
-            })
+              },
+            });
           } else {
-            logger.warn(`lock with no height won't be considered as anchor: ${JSON.stringify(lock.toObject())}`)
+            logger.warn(`lock with no height won't be considered as anchor: ${JSON.stringify(lock.toObject())}`);
           }
         }
       }
 
-      lastTxID = txs[txs.length - 1].transactionInfo.id
-      iter++
+      lastTxID = txs[txs.length - 1]!.transactionInfo!.id || lastTxID;
+      iter++;
 
-      anchors = [...anchors, ...anchorsFound]
-      logger.info(`found ${anchorsFound.length} anchor(s) across ${txs.length} txs in iter #${iter}. total anchors: ${anchors.length}`)
+      anchors = [...anchors, ...anchorsFound];
+      logger.info(
+        `Found ${anchorsFound.length} anchor(s) across ${txs.length} txs in iter #${iter}.
+        Total anchors: ${anchors.length}`,
+      );
     }
 
     return sortAnchors(anchors);
@@ -182,19 +177,19 @@ export class Inspector {
     const island = lock.getBlock()!.toObject();
     const header = new messages.Header();
     header.setHeight(parseInt(island.height, 10));
-    header.setType(lock.getType())
+    header.setType(lock.getType());
 
     if (this.useRestSkipper) {
       try {
         const ship = await this.skipper.fetchRest(island.height);
         if (island.height === ship.height) {
-          return island.hash === ship.hash
+          return island.hash === ship.hash;
         }
-        logger.warn("HEIGHT NOT SAME", {ship, island})
-        return false
+        logger.warn('HEIGHT NOT SAME', {ship, island});
+        return false;
       } catch (e) {
-        logger.warn("`verifyLock` failed:", e)
-        return false
+        logger.warn('`verifyLock` failed:', e);
+        return false;
       }
     }
 
@@ -205,7 +200,7 @@ export class Inspector {
         }
 
         if (!resp) {
-          throw new Error("upstream returns undefined response. is the service online?")
+          throw new Error('upstream returns undefined response. is the service online?');
         }
 
         const ship = resp.getBlock()!.toObject();

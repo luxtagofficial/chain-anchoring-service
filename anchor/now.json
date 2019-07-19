@@ -7,10 +7,11 @@
 	],
 	"env": {
 		"PRIVATE_KEY__BCM_IIUM": "@private_key__bcm_iium",
-		"PRIVATE_KEY__BCM_NEM": "@private_key__bcm_nem"
+		"PRIVATE_KEY__BCM_NEM": "@private_key__bcm_nem",
+		"PRIVATE_KEY__BCM_ETH": "@private_key__bcm_eth"
 	},
 	"routes": [
-		{ 
+		{
 			"src": "(.*)",
 			"dest": "now-handler/api.ts",
 			"methods": [

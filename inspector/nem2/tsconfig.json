@@ -50,7 +50,7 @@
     "skipLibCheck": true,
   },
   "files": [
-    "index.ts"
+    "inspector.ts"
   ],
   "exclude": [
     "node_modules",

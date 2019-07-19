@@ -18,7 +18,8 @@
 
 import * as nemSDK from 'nem-sdk';
 import yargs from 'yargs';
-import { Inspector, InspectorArgs } from './inspector'
+import { InspectedAnchor } from '../types';
+import { Inspector, InspectorArgs } from './inspector';
 
 const nem = nemSDK.default;
 
@@ -58,9 +59,12 @@ function parseArguments() {
   };
 }
 
-function main() {
+async function main() {
   const inspector = new Inspector(parseArguments() as InspectorArgs);
-  inspector.fetchAnchors();
+  const anchors = await inspector.fetchAnchors();
+  (anchors as InspectedAnchor[]).forEach((anchor) => {
+    console.log(`Height ${anchor.height}: ${anchor.valid ? 'Verified' : 'Invalid'}`);
+  });
 }
 
 main();

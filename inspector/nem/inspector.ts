@@ -11,7 +11,7 @@ import * as messages from '../_proto/anchor_pb';
 const nem = nemSDK.default;
 
 export type InspectorArgs = InspectorContract & {
-  address: string
+  address: string,
 };
 
 function hextoUint8Arr(hexx: string): Uint8Array {
@@ -28,36 +28,11 @@ const handleUpstreamMissingKey = (key: string, jsonResponse: object) => {
     error: `upstream returns unexpected response: '.${key}' key is missing.`,
     details: [
       { jsonResponse },
-    ]
+    ],
   };
 };
 
 export class Inspector {
-  private args: InspectorArgs;
-  private island: any;
-  private skipper: services.InspectClient | any;
-  private useRestSkipper: boolean;
-
-  // any integer greater than 0
-  private reOffsetID = /^[1-9][0-9]{0,}$/;
-
-  public constructor(args: InspectorArgs) {
-    this.args = args;
-
-    let { protocol, hostname, port } = parse(this.args.island as string);
-    if (!hostname) {
-      throw new Error(`invalid island`);
-    }
-
-    this.island = nem.model.objects.create('endpoint')(protocol + '//' + hostname, port);
-
-    this.useRestSkipper = this.args.skipper.startsWith('http');
-    if (this.useRestSkipper) {
-      this.skipper = useRestSkipper(this.args.skipper);
-    } else {
-      this.skipper = new services.InspectClient(this.args.skipper, grpc.credentials.createInsecure());
-    }
-  }
 
   public static async chainInfo(endpoint: string) {
     const [ respBlock2, respHeight] = await Promise.all([
@@ -67,10 +42,10 @@ export class Inspector {
           'content-type': 'application/json',
         },
         body: JSON.stringify({
-          height: 2
-        })
-      }).then(resp => resp.json()),
-      fetch(endpoint + '/chain/height').then(resp => resp.json())
+          height: 2,
+        }),
+      }).then((resp) => resp.json()),
+      fetch(endpoint + '/chain/height').then((resp) => resp.json()),
     ]);
 
     if (!respBlock2.prevBlockHash) {
@@ -86,6 +61,31 @@ export class Inspector {
       currentBlockHeight: respHeight.height,
     };
   }
+  private args: InspectorArgs;
+  private island: any;
+  private skipper: services.InspectClient | any;
+  private useRestSkipper: boolean;
+
+  // any integer greater than 0
+  private reOffsetID = /^[1-9][0-9]{0,}$/;
+
+  public constructor(args: InspectorArgs) {
+    this.args = args;
+
+    const { protocol, hostname, port } = parse(this.args.island as string);
+    if (!hostname) {
+      throw new Error(`invalid island`);
+    }
+
+    this.island = nem.model.objects.create('endpoint')(protocol + '//' + hostname, port);
+
+    this.useRestSkipper = this.args.skipper.startsWith('http');
+    if (this.useRestSkipper) {
+      this.skipper = useRestSkipper(this.args.skipper);
+    } else {
+      this.skipper = new services.InspectClient(this.args.skipper, grpc.credentials.createInsecure());
+    }
+  }
 
   public async fetchAnchors(offset?: string): Promise<InspectedAnchor[] | ErrorObject> {
       let anchors: InspectedAnchor[] = [];
@@ -94,11 +94,11 @@ export class Inspector {
       if (offset && !this.reOffsetID.test(offset)) {
         return {
           error: 'offset must be integer greater than 0',
-          code: 'E_INVALID_ANCHOR_OFFSET'
+          code: 'E_INVALID_ANCHOR_OFFSET',
         };
       }
 
-      let lastTxID = Number.parseInt(offset, 10);
+      let lastTxID = Number.parseInt(offset || '', 10);
       while (anchors.length < PAGE_SIZE) {
         const resp = await nem.com.requests.account.transactions.all(this.island, this.args.address, null, lastTxID);
         if (!resp.data) {
@@ -108,11 +108,11 @@ export class Inspector {
         const txs = resp.data;
         // break the loop if there's no more data from upstream
         if (!txs.length) {
-          logger.warn("[INFO] `fetchAnchors` completed: no more data from upstream");
+          logger.warn('[INFO] `fetchAnchors` completed: no more data from upstream');
           break;
         }
 
-        let locks: InspectorLock[] = [];
+        const locks: InspectorLock[] = [];
         txs.forEach((tx) => {
           const messageObj = tx.transaction.message;
           if (messageObj && messageObj.payload) {
@@ -132,7 +132,7 @@ export class Inspector {
           }
         });
 
-        let anchorsFound: InspectedAnchor[] = [];
+        const anchorsFound: InspectedAnchor[] = [];
         for (const { offsetID, txHash, lockList } of locks) {
           for (const lock of lockList) {
             if ((anchors.length + anchorsFound.length) >= PAGE_SIZE) {
@@ -150,7 +150,7 @@ export class Inspector {
                 island: {
                   offsetID,
                   txHash,
-                }
+                },
               });
             } else {
               logger.warn(`lock with no height won't be considered as anchor: ${JSON.stringify(lock.toObject())}`);
@@ -180,10 +180,10 @@ export class Inspector {
         if (island.height === ship.height) {
           return island.hash === ship.hash;
         }
-        logger.warn("HEIGHT NOT SAME", {ship, island});
+        logger.warn('HEIGHT NOT SAME', {ship, island});
         return false;
       } catch (e) {
-        logger.warn("`verifyLock` failed:", e);
+        logger.warn('`verifyLock` failed:', e);
         return false;
       }
     }
@@ -195,7 +195,7 @@ export class Inspector {
         }
 
         if (!resp) {
-          throw new Error("upstream returns undefined response. is the service online?");
+          throw new Error('upstream returns undefined response. is the service online?');
         }
 
         const ship = resp.getBlock()!.toObject();

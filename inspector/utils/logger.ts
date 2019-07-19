@@ -1,4 +1,4 @@
-const { NOW_REGION, PUPPETEER_EXECUTABLE_PATH } = process.env
+const { NOW_REGION } = process.env
 const NOW_DEV = NOW_REGION == 'dev1'
 
 const log = (level: string, msg: string, obj?: object) => {

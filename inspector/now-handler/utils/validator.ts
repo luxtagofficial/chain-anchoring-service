@@ -1,4 +1,4 @@
-import Joi from '@hapi/joi'
+import Joi from '@hapi/joi';
 
 const validate = (schema, payload) => {
 	const { error } = Joi.validate(payload, schema, { abortEarly: false })
@@ -33,8 +33,5 @@ const getMetaError = (metaSchema, inspector) => {
 	}
 }
 
-export {
-	validate,
-	getMetaError,
-	Joi,
-}
+export { validate, getMetaError, Joi };
+

@@ -1,6 +1,6 @@
-import { parse } from 'url'
-import { json, send } from 'micro'
-import { Joi, validate } from './utils/validator'
+import { json, send } from 'micro';
+import { parse } from 'url';
+import { Joi, validate } from './utils/validator';
 
 const chainInfoSchema = Joi.object().keys({
 	type: Joi.string().required(),
@@ -42,14 +42,14 @@ const handleUpstreamError = (e, res) => {
 	const code = 'E_UPSTREAM_ERROR'
 	const errMsg = e.message.toLowerCase()
 	if (errMsg.includes('enotfound')) {
-		return send(res, 400, { 
+		return send(res, 400, {
 			error: `endpoint is not online.`,
 			code,
 		});
 	}
 
 	if (errMsg.includes('"port" option should be')) {
-		return send(res, 400, { 
+		return send(res, 400, {
 			error: `endpoint's port is invalid.`,
 			code,
 		});
@@ -58,7 +58,7 @@ const handleUpstreamError = (e, res) => {
 	const error = 'unhandled upstream error. please see server log.'
 	console.log(`[ERROR] ${error}: '${e.message}'\n`, e)
 
-	return send(res, 500, { 
+	return send(res, 500, {
 		error,
 		code
 	});
