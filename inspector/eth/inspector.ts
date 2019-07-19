@@ -15,14 +15,14 @@
  * limitations under the License.
  *
  */
-
 import grpc from 'grpc';
 import Web3 from 'web3';
-import { ErrorObject, InspectedAnchor, InspectorContract, InspectorLock, PAGE_SIZE } from '../types';
+import { ErrorObject, InspectedAnchor, InspectorContract } from '../types';
 import { useRestSkipper } from '../useRestSkipper';
 import { logger, sortAnchors } from '../utils';
 import * as services from '../_proto/anchor_grpc_pb';
 import * as messages from '../_proto/anchor_pb';
+import { InspectorLock, PAGE_SIZE } from './../types/index';
 
 export type InspectorArgs = InspectorContract & {
   accountAddress: string;
@@ -81,71 +81,98 @@ export class Inspector {
   }
 
   public async fetchAnchors(offset?: number): Promise<InspectedAnchor[] | ErrorObject> {
-    offset = offset ? offset : 0;
+    let currentBlockHeight = offset
+      ? (offset - 1)
+      : await this.web3.eth.getBlock('latest').then((block) => block.number);
     let anchors: InspectedAnchor[] = [];
     let iter = 0;
 
-    let currentBlockHeight = await this.web3.eth.getBlock('latest').then((block) => block.number);
+    return new Promise((resolve) => {
+      console.log('[INFO] fetchAnchors(): Timeout start');
 
-    while (anchors.length < PAGE_SIZE && iter < 1000) { // Stop searching after 1000 blocks
-      await this.web3.eth.getBlock(currentBlockHeight, true).then(async (block) => {
-        if (block.transactions.length > 0) {
-          const txs = block.transactions.filter((tx) => tx.from === this.accountAddress);
-          const locks: InspectorLock[] = [];
-          for (const tx of txs) {
-            try {
-              const anchor = messages.Anchor.deserializeBinary(hex2arr(tx.input));
-              // Ignore anchor with no locks
-              if (anchor.getLocksList().length !== 0) {
-                locks.push({
-                  offsetID: block.number.toString(),
-                  txHash: tx.hash,
-                  lockList: anchor.getLocksList(),
-                });
-              }
-            } catch (e) {
-              logger.warn(`'messages.Anchor.deserializeBinary' failed: ${e.message}. tx: ${JSON.stringify(tx)}`);
-            }
+      setTimeout(() => {
+        console.log('[INFO] fetchAnchors(): Timeout triggered');
+        resolve(anchors);
+      }, 8000);
 
-            const anchorsFound: InspectedAnchor[] = [];
-            for (const { offsetID, txHash, lockList } of locks) {
-              for (const lock of lockList) {
-                if ((anchors.length + anchorsFound.length) >= PAGE_SIZE) {
-                  break;
-                }
+      const next = () => {
+        this.fetchBlock(currentBlockHeight).then(({anchorsFound, txs}) => {
+          anchors = [...anchors, ...anchorsFound];
+          logger.info(
+            // tslint:disable-next-line: max-line-length
+            `Found ${anchorsFound.length} anchor(s) across ${txs} txs in iter #${iter}. Total anchors: ${anchors.length}`,
+          );
 
-                const lockBlock = lock.getBlock()!;
-                const height = lockBlock.getHeight();
-                if (height) {
-                  const valid = await this.verifyLock(lock);
-                  anchorsFound.push({
-                    hash: lockBlock.getHash(),
-                    height,
-                    valid,
-                    island: {
-                      offsetID,
-                      txHash,
-                    },
-                  });
-                } else {
-                  logger.warn(`lock with no height won't be considered as anchor: ${JSON.stringify(lock.toObject())}`);
-                }
-              }
-            }
-            anchors = [...anchors, ...anchorsFound];
-            logger.info(
-              `Found ${anchorsFound.length} anchor(s) across ${txs.length} txs in iter #${iter}.
-              Total anchors: ${anchors.length}`,
-            );
+          iter++;
+          currentBlockHeight--;
+
+          if (anchors.length < PAGE_SIZE) {
+            next();
+          } else {
+            resolve(anchors);
           }
+        });
+      };
+      next();
+
+    }).then(() => {
+      if (anchors.length === 0) {
+        return {
+          error: `Unable to find anchors within timeframe. Last block ${currentBlockHeight}`,
+          code: 'E_TIMEOUT_TRIGGERED',
+        };
+      }
+      return sortAnchors(anchors);
+    });
+
+  }
+
+  private fetchBlock(currentHeight): Promise<any> {
+    return this.web3.eth.getBlock(currentHeight, true).then(async (block) => {
+      if (block.transactions.length > 0) {
+        const txs = block.transactions.filter((tx) => tx.from === this.accountAddress);
+        const locks: InspectorLock[] = [];
+        for (const tx of txs) {
+          try {
+            const anchor = messages.Anchor.deserializeBinary(hex2arr(tx.input));
+            // Ignore anchor with no locks
+            if (anchor.getLocksList().length !== 0) {
+              locks.push({
+                offsetID: block.number.toString(),
+                txHash: tx.hash,
+                lockList: anchor.getLocksList(),
+              });
+            }
+          } catch (e) {
+            logger.warn(`'messages.Anchor.deserializeBinary' failed: ${e.message}. tx: ${JSON.stringify(tx)}`);
+          }
+
+          const anchorsFound: InspectedAnchor[] = [];
+          for (const { offsetID, txHash, lockList } of locks) {
+            for (const lock of lockList) {
+              const lockBlock = lock.getBlock()!;
+              const height = lockBlock.getHeight();
+              if (height) {
+                const valid = await this.verifyLock(lock);
+                anchorsFound.push({
+                  hash: lockBlock.getHash(),
+                  height,
+                  valid,
+                  island: {
+                    offsetID,
+                    txHash,
+                  },
+                });
+              } else {
+                logger.warn(`lock with no height won't be considered as anchor: ${JSON.stringify(lock.toObject())}`);
+              }
+            }
+          }
+          return {anchorsFound, txs: txs.length};
         }
-
-        iter++;
-        --currentBlockHeight;
-      });
-    }
-
-    return sortAnchors(anchors);
+      }
+      return {anchorsFound: [], txs: 0};
+    });
   }
 
   private async verifyLock(lock: messages.Lock): Promise<boolean> {
@@ -188,5 +215,5 @@ export class Inspector {
 }
 function hex2arr(hex) {
   hex = hex.replace(/^0x/i, '');
-  return new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+  return new Uint8Array(hex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
 }
